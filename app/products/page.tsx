@@ -84,10 +84,6 @@ export default async function ProductsPage({ searchParams }: Props) {
                     {p.description && (
                       <p className="product-description">{p.description}</p>
                     )}
-                    <div className="product-footer" style={{ marginTop: 20 }}>
-                      <span />
-                      <button className="product-btn">اطلب الآن</button>
-                    </div>
                   </div>
                 </RevealOnScroll>
               ))}

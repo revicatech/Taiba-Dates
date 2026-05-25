@@ -12,9 +12,6 @@ export default function CtaBanner() {
             سواء كانت مناسبة عيد أو زفاف أو مجرد كرمك الخليجي الأصيل — طيبه تجعل كل لحظة أحلى.
           </p>
           <div className="cta-actions">
-            <a href="/products" className="btn-primary" style={{ fontSize: 15, padding: "18px 44px" }}>
-              اطلب الآن
-            </a>
             <a href="tel:+966500000000" className="btn-ghost">تواصل معنا</a>
           </div>
         </RevealOnScroll>

@@ -32,7 +32,6 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
-          <a href="/products" className="nav-cta">اطلب الآن</a>
           <button
             className="hamburger"
             aria-label="فتح القائمة"
@@ -58,14 +57,6 @@ export default function Navbar() {
             {link.label}
           </a>
         ))}
-        <a
-          href="/products"
-          onClick={close}
-          className="btn-primary"
-          style={{ fontSize: 18, padding: "18px 48px" }}
-        >
-          اطلب الآن
-        </a>
       </div>
     </>
   );
