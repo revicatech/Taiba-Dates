@@ -76,7 +76,7 @@ export default function Footer() {
         </div>
         <div className="footer-bottom">
           <p className="footer-copy">© 2026 طيبه للتمور — جميع الحقوق محفوظة</p>
-          <p className="footer-designed">Designed by Crazy Ads</p>
+          <p className="footer-designed">Designed by REVICA x Crazy Ads</p>
         </div>
       </div>
     </footer>
