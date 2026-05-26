@@ -1,4 +1,4 @@
-import HeritageSvg from "@/components/illustrations/HeritageSvg";
+import Image from "next/image";
 import RevealOnScroll from "@/components/RevealOnScroll";
 
 const statNumStyle = {
@@ -23,9 +23,13 @@ export default function Heritage() {
           <RevealOnScroll className="heritage-visual">
             <div className="heritage-border-frame" />
             <div className="heritage-img-frame">
-              <div className="frame-inner-bg">
-                <HeritageSvg />
-              </div>
+              <Image
+                src="/assets/store.jpeg"
+                alt="متجر طيبه للتمور"
+                fill
+                style={{ objectFit: "cover", objectPosition: "center top" }}
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
             </div>
             <div className="heritage-accent-box">
               <div className="heritage-accent-num">30+</div>

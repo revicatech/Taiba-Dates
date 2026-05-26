@@ -1,10 +1,17 @@
 import RevealOnScroll from "@/components/RevealOnScroll";
 import { features } from "@/data/features";
 
-export default function Features() {
-  // Render two identical sets back-to-back so the CSS marquee loops seamlessly.
-  const sets = [false, true];
+// Map each feature to a bento grid slot size: hero, tall, wide, or small
+const slotClasses = [
+  "bento-hero",   // انتقاء يدوي  — large top-left
+  "bento-tall",   // 100% طبيعي   — tall right column
+  "bento-wide",   // تغليف فاخر  — wide bottom-left
+  "bento-small",  // توصيل سريع  — small
+  "bento-small",  // جودة معتمدة — small
+  "bento-small",  // هدايا مخصصة — small
+];
 
+export default function Features() {
   return (
     <section className="features" id="features">
       <div className="container">
@@ -16,27 +23,22 @@ export default function Features() {
             التميز في كل تفصيل
           </h2>
           <p className="section-title-en">Excellence in Every Detail</p>
-          <p className="section-desc">
-            التزامنا بالجودة لا يتوقف عند الانتقاء — بل يمتد إلى كل لمسة في رحلة التمرة.
-          </p>
         </RevealOnScroll>
 
-        <div className="features-slider">
-          <div className="features-track" id="featuresTrack">
-            {sets.flatMap((isClone) =>
-              features.map((f, i) => (
-                <div
-                  key={`${isClone ? "b" : "a"}-${i}`}
-                  className="feature-card"
-                  aria-hidden={isClone || undefined}
-                >
-                  <div className="feature-icon">{f.icon}</div>
-                  <div className="feature-title">{f.title}</div>
-                  <p className="feature-desc">{f.desc}</p>
-                </div>
-              ))
-            )}
-          </div>
+        <div className="bento-grid">
+          {features.map((f, i) => (
+            <RevealOnScroll
+              key={i}
+              className={`bento-card ${slotClasses[i] ?? "bento-small"}`}
+              style={{ transitionDelay: `${i * 80}ms` }}
+            >
+              <span className="bento-icon">{f.icon}</span>
+              <div className="bento-body">
+                <h3 className="bento-title">{f.title}</h3>
+                <p className="bento-desc">{f.desc}</p>
+              </div>
+            </RevealOnScroll>
+          ))}
         </div>
       </div>
     </section>
