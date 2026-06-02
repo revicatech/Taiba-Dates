@@ -68,9 +68,7 @@ export default function Footer() {
             <h4>تواصل معنا</h4>
             <ul>
               <li><a href="#">عن طيبه</a></li>
-              <li><a href="#">سياسة الخصوصية</a></li>
-              <li><a href="#">الشروط والأحكام</a></li>
-              <li><a href="tel:+966500000000" dir="ltr">+966 50 000 0000</a></li>
+              <li><a href="tel:+966500000000" dir="ltr">+961 50 000 0000</a></li>
             </ul>
           </div>
         </div>
