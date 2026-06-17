@@ -1,10 +1,9 @@
 import RevealOnScroll from "@/components/RevealOnScroll";
 
 const stats = [
-  { num: "15,000+", label: "عميل سعيد",          sub: "Happy Customers" },
-  { num: "12",      label: "دولة نوصّل إليها",    sub: "Countries Served" },
-  { num: "50+",     label: "صنفًا من التمور",     sub: "Date Varieties" },
-  { num: "20+",     label: "سنة من الخبرة",       sub: "Years of Expertise" },
+  { num: "100%",    label: "طبيعي وأصيل",         sub: "Natural & Authentic" },
+  { num: "50+",     label: "صنف من التمور",        sub: "Date Varieties" },
+  { num: "20+",     label: "سنة من الخبرة",        sub: "Years of Expertise" },
 ];
 
 export default function Testimonials() {

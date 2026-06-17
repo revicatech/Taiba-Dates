@@ -23,7 +23,7 @@ export default function Navbar() {
       <nav className={scrolled ? "scrolled" : undefined}>
         <div className="container">
           <Link href="/" className="nav-logo" aria-label="طيبه للتمور — الصفحة الرئيسية">
-            <Logo size={56} priority />
+            <Logo size={72} priority />
           </Link>
           <ul className="nav-links">
             {navLinks.map((link) => (

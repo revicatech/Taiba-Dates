@@ -51,7 +51,10 @@ export default function Heritage() {
               كل صندوق طيبه يحمل وعدًا: تمرة اخترناها بأيدينا، عُولجت بأدق المعايير، وصلت إليكم في أوج نضجها وعطائها.
             </p>
             <div style={{ display: "flex", gap: 32, marginBottom: 48 }}>
-              
+              <div>
+                <div style={statNumStyle}>100%</div>
+                <div style={statLabelStyle}>طبيعي وأصيل</div>
+              </div>
               <div style={{ width: 1, background: "var(--color-border)" }} />
               <div>
                 <div style={statNumStyle}>50+</div>
@@ -59,8 +62,8 @@ export default function Heritage() {
               </div>
               <div style={{ width: 1, background: "var(--color-border)" }} />
               <div>
-                <div style={statNumStyle}>100%</div>
-                <div style={statLabelStyle}>طبيعي وخالٍ من الإضافات</div>
+                <div style={statNumStyle}>20+</div>
+                <div style={statLabelStyle}>سنة من الخبرة</div>
               </div>
             </div>
             <a href="/products" className="btn-primary">تصفح المنتجات</a>

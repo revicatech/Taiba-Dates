@@ -40,13 +40,16 @@ export default function Hero() {
 
           <div className="hero-stats fade-up delay-4">
             <div className="hero-stat">
+              <span className="hero-stat-num">100%</span>
+              <span className="hero-stat-label">طبيعي وأصيل</span>
+            </div>
+            <div className="hero-stat">
               <span className="hero-stat-num">+50</span>
               <span className="hero-stat-label">صنف من التمور</span>
             </div>
-            
             <div className="hero-stat">
-              <span className="hero-stat-num">100%</span>
-              <span className="hero-stat-label">طبيعي وأصيل</span>
+              <span className="hero-stat-num">20+</span>
+              <span className="hero-stat-label">سنة من الخبرة</span>
             </div>
           </div>
         </div>
