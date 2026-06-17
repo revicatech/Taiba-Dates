@@ -4,7 +4,7 @@ const stats = [
   { num: "15,000+", label: "عميل سعيد",          sub: "Happy Customers" },
   { num: "12",      label: "دولة نوصّل إليها",    sub: "Countries Served" },
   { num: "50+",     label: "صنفًا من التمور",     sub: "Date Varieties" },
-  { num: "30+",     label: "سنة من الخبرة",       sub: "Years of Expertise" },
+  { num: "20+",     label: "سنة من الخبرة",       sub: "Years of Expertise" },
 ];
 
 export default function Testimonials() {

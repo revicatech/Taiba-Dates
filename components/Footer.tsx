@@ -68,7 +68,7 @@ export default function Footer() {
             <h4>تواصل معنا</h4>
             <ul>
               <li><a href="#">عن طيبه</a></li>
-              <li><a href="tel:+966500000000" dir="ltr">+961 50 000 0000</a></li>
+              <li><a href="tel:+96176993533" dir="ltr">+961 76 993 533</a></li>
             </ul>
           </div>
         </div>

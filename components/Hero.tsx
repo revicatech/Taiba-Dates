@@ -18,11 +18,11 @@ export default function Hero() {
               <h1 className="hero-headline-ar fade-up delay-1">
                 تمور <span className="gold">فاخرة</span>
                 <br />
-                من قلب الجزيرة
+              من القلب للقلب
               </h1>
               <p className="hero-headline-en fade-up delay-2">Handpicked Heritage Dates</p>
               <p className="hero-desc fade-up delay-3">
-                منذ أجيال، نختار أجود التمور من أفضل مزارع الخليج العربي — كل تمرة حكاية من الأصالة والكرم والطعم الفريد.
+                منذ أجيال، نختار أجود التمور من أفضل مزارع الخليج العربي و الأردن — كل تمرة حكاية من الأصالة والكرم والطعم الفريد.
               </p>
               <div className="hero-actions fade-up delay-4">
                 <a href="/products" className="btn-primary">اكتشف مجموعتنا</a>
@@ -43,10 +43,7 @@ export default function Hero() {
               <span className="hero-stat-num">+50</span>
               <span className="hero-stat-label">صنف من التمور</span>
             </div>
-            <div className="hero-stat">
-              <span className="hero-stat-num">15K</span>
-              <span className="hero-stat-label">عميل سعيد</span>
-            </div>
+            
             <div className="hero-stat">
               <span className="hero-stat-num">100%</span>
               <span className="hero-stat-label">طبيعي وأصيل</span>

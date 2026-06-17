@@ -32,7 +32,7 @@ export default function Heritage() {
               />
             </div>
             <div className="heritage-accent-box">
-              <div className="heritage-accent-num">30+</div>
+              <div className="heritage-accent-num">20+</div>
               <div className="heritage-accent-label">سنة من الخبرة</div>
             </div>
           </RevealOnScroll>
@@ -44,16 +44,14 @@ export default function Heritage() {
             </h2>
             <p className="section-title-en">From the Gulf to Your Table</p>
             <p className="section-desc" style={{ marginBottom: 28 }}>
-              تأسست طيبه للتمور على عشق أصيل للتمر الخليجي وحرفة الانتقاء الدقيق. نجوب مزارع الأحساء والمدينة المنورة وسلطنة عُمان باحثين عن أندر الأصناف وأجودها.
+              تأسست طيبه للتمور على عشق أصيل للتمر الخليجي وحرفة الانتقاء الدقيق. نجوب مزارع القصيم و الغاط و المدينة المنورة و الأردن و الأغوار الأردنية 
+ باحثين عن أندر الأصناف وأجودها.
             </p>
             <p className="section-desc" style={{ marginBottom: 48 }}>
               كل صندوق طيبه يحمل وعدًا: تمرة اخترناها بأيدينا، عُولجت بأدق المعايير، وصلت إليكم في أوج نضجها وعطائها.
             </p>
             <div style={{ display: "flex", gap: 32, marginBottom: 48 }}>
-              <div>
-                <div style={statNumStyle}>15K+</div>
-                <div style={statLabelStyle}>عميل في 12 دولة</div>
-              </div>
+              
               <div style={{ width: 1, background: "var(--color-border)" }} />
               <div>
                 <div style={statNumStyle}>50+</div>
