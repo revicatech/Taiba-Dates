@@ -680,7 +680,7 @@ nav .container {
 }
 .product-img {
   position: relative;
-  aspect-ratio: 3/4;
+  aspect-ratio: 1/1;
   overflow: hidden;
   background: var(--color-bg-section);
 }
@@ -2000,12 +2000,12 @@ footer {
   box-shadow: 0 8px 40px rgba(47, 74, 56, 0.12);
   overflow: hidden;
   background: #fff;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 1 / 1;
 }
 @media (max-width: 768px) {
   .pdv2-img-card {
-    aspect-ratio: unset;
-    height: 280px;
+    aspect-ratio: 1 / 1;
+    height: auto;
   }
 }
 
