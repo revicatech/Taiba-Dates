@@ -20,7 +20,7 @@ const subCategorySchema = new Schema<ISubCategory>({
 const categorySchema = new Schema<ICategory>(
   {
     nameAR: { type: String, required: true, unique: true, trim: true },
-    nameEN: { type: String, trim: true, default: "" },
+    nameEN: { type: String, trim: true },
     subCategories: { type: [subCategorySchema], default: [] },
   },
   { timestamps: true }

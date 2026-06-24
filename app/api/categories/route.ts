@@ -24,10 +24,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     await connectDB();
     const category = await Category.create({
       nameAR,
-      nameEN: nameEN || "",
+      nameEN: nameEN || undefined,
       subCategories: (subCategories || []).map((s: { nameAR: string; nameEN?: string }) => ({
         nameAR: s.nameAR,
-        nameEN: s.nameEN || "",
+        nameEN: s.nameEN || undefined,
       })),
     });
     return NextResponse.json(category, { status: 201 });

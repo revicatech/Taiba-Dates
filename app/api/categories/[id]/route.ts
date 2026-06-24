@@ -26,11 +26,11 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
     const { nameAR, nameEN, subCategories } = await req.json();
     const update: Record<string, unknown> = {};
     if (nameAR !== undefined) update.nameAR = nameAR;
-    if (nameEN !== undefined) update.nameEN = nameEN;
+    if (nameEN !== undefined) update.nameEN = nameEN || undefined;
     if (subCategories !== undefined) {
       update.subCategories = subCategories.map((s: { nameAR: string; nameEN?: string }) => ({
         nameAR: s.nameAR,
-        nameEN: s.nameEN || "",
+        nameEN: s.nameEN || undefined,
       }));
     }
     await connectDB();
