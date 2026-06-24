@@ -56,7 +56,6 @@ export default async function ProductsPage({ searchParams }: Props) {
                         )}
                         <div className="product-name-ar">{p.nameAR}</div>
                         {p.nameEN && <div className="product-name-en">{p.nameEN}</div>}
-                        {p.description && <p className="product-description">{p.description}</p>}
                         {p.sizes.length > 0 && (
                           <div className="product-weights">
                             <span className="weights-label">الأحجام:</span>

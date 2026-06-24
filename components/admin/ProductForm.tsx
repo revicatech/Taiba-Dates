@@ -148,10 +148,6 @@ export default function ProductForm({ mode, initial }: Props) {
             <textarea className="pf-input pf-textarea" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="جملة أو جملتان تظهران على بطاقة المنتج" />
           </div>
 
-          <div className="pf-field">
-            <label className="pf-label">الوصف التفصيلي <span className="pf-opt">(اختياري)</span></label>
-            <textarea className="pf-input pf-textarea" rows={4} value={fullDescription} onChange={(e) => setFullDescription(e.target.value)} placeholder="وصف مفصل يظهر في صفحة المنتج" />
-          </div>
 
           <div className="pf-field">
             <label className="pf-label">المميزات <span className="pf-opt">(اختياري)</span></label>

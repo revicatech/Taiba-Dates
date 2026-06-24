@@ -43,7 +43,6 @@ export default async function Products() {
                       )}
                       <div className="product-name-ar">{p.nameAR}</div>
                       {p.nameEN && <div className="product-name-en">{p.nameEN}</div>}
-                      {p.description && <p className="product-description">{p.description}</p>}
                       {p.sizes.length > 0 && (
                         <div className="product-weights">
                           {p.sizes.map((s) => (
