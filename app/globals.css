@@ -1938,3 +1938,286 @@ footer {
 }
 .pdc-whatsapp:hover { background: #1ebe5c; box-shadow: 0 6px 24px rgba(37,211,102,0.50); transform: translateY(-1px); }
 .pdc-wa-size { font-size: 13px; font-family: var(--font-latin-body); opacity: 0.85; margin-right: 4px; }
+
+/* ============================================================
+   PRODUCT DETAIL v2 (pdv2-*)
+   Colors: cream #FBF7EC · green #2F4A38 · gold #E0A52E
+   ============================================================ */
+.pdv2-page {
+  background: #FBF7EC;
+  min-height: 100vh;
+  padding-top: calc(var(--nav-height) + 32px);
+  padding-bottom: 80px;
+}
+
+.pdv2-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Breadcrumb */
+.pdv2-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #5a7a63;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.pdv2-breadcrumb a {
+  color: #5a7a63;
+  text-decoration: none;
+  transition: color 150ms;
+}
+.pdv2-breadcrumb a:hover { color: #2F4A38; }
+.pdv2-breadcrumb span { color: #a0b8a8; }
+.pdv2-breadcrumb span:last-child { color: #2F4A38; font-weight: 600; }
+
+/* Two-column grid (RTL: image right, info left) */
+.pdv2-grid {
+  display: grid;
+  grid-template-columns: 45% 1fr;
+  gap: 48px;
+  align-items: start;
+}
+@media (max-width: 768px) {
+  .pdv2-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
+/* ── IMAGE COLUMN ── */
+.pdv2-img-col { position: sticky; top: calc(var(--nav-height) + 24px); }
+@media (max-width: 768px) { .pdv2-img-col { position: static; } }
+
+.pdv2-img-card {
+  position: relative;
+  border-radius: 20px;
+  border: 1.5px solid rgba(47, 74, 56, 0.18);
+  box-shadow: 0 8px 40px rgba(47, 74, 56, 0.12);
+  overflow: hidden;
+  background: #fff;
+  aspect-ratio: 3 / 4;
+}
+@media (max-width: 768px) {
+  .pdv2-img-card {
+    aspect-ratio: unset;
+    height: 280px;
+  }
+}
+
+.pdv2-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.3s ease;
+}
+.pdv2-img-empty {
+  width: 100%;
+  height: 100%;
+  background: #f0ebe0;
+}
+
+.pdv2-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: #E0A52E;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(224, 165, 46, 0.4);
+}
+
+.pdv2-thumbs {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+.pdv2-thumb {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 2px solid rgba(255,255,255,0.6);
+  opacity: 0.65;
+  transition: opacity 200ms, border-color 200ms, transform 200ms;
+}
+.pdv2-thumb:hover { opacity: 0.9; transform: scale(1.05); }
+.pdv2-thumb-active { border-color: #E0A52E; opacity: 1; }
+
+/* ── INFO COLUMN ── */
+.pdv2-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pdv2-title {
+  font-family: var(--font-arabic);
+  font-size: clamp(1.9rem, 3.5vw, 2.6rem);
+  font-weight: 800;
+  color: #2F4A38;
+  line-height: 1.25;
+}
+.pdv2-title-en {
+  font-family: var(--font-latin-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: #7a9a83;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: -16px;
+}
+
+/* Description block */
+.pdv2-desc {
+  border-right: 3px solid #E0A52E;
+  background: #FFF8E7;
+  border-radius: 0 12px 12px 0;
+  padding: 12px 16px;
+}
+.pdv2-desc p {
+  font-size: 15px;
+  line-height: 1.85;
+  color: #3d5a45;
+}
+
+/* Features list */
+.pdv2-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+.pdv2-feature-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  position: relative;
+}
+.pdv2-feature-divider {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: rgba(47, 74, 56, 0.1);
+}
+.pdv2-feature-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #E0A52E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(224,165,46,0.3);
+}
+.pdv2-feature-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2F4A38;
+}
+
+/* Sub-category & size sections */
+.pdv2-sub-section { display: flex; flex-direction: column; gap: 10px; }
+
+.pdv2-selector-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2F4A38;
+  letter-spacing: 0.03em;
+}
+
+.pdv2-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.pdv2-chip {
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1.5px solid #2F4A38;
+  background: transparent;
+  font-family: var(--font-arabic);
+  font-size: 14px;
+  font-weight: 600;
+  color: #2F4A38;
+  cursor: pointer;
+  transition: background 180ms, color 180ms, box-shadow 180ms, transform 150ms;
+}
+.pdv2-chip:hover {
+  background: rgba(224, 165, 46, 0.12);
+  border-color: #E0A52E;
+  color: #2F4A38;
+}
+.pdv2-chip-active {
+  background: #E0A52E;
+  border-color: #E0A52E;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(224, 165, 46, 0.45);
+}
+
+/* WhatsApp button */
+.pdv2-wa-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 24px;
+  background: #25D366;
+  color: #fff;
+  font-family: var(--font-arabic);
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 14px;
+  text-decoration: none;
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.35);
+  transition: transform 200ms, box-shadow 200ms, background 200ms;
+}
+.pdv2-wa-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(37, 211, 102, 0.50);
+  background: #1ebe5c;
+}
+
+/* Trust line */
+.pdv2-trust {
+  text-align: center;
+  font-size: 12px;
+  color: #7a9a83;
+  letter-spacing: 0.04em;
+  margin-top: -12px;
+}
+
+/* Mobile sticky WhatsApp */
+@media (max-width: 768px) {
+  .pdv2-wa-btn {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    border-radius: 0;
+    z-index: 90;
+    padding: 18px 24px;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 20px rgba(37, 211, 102, 0.25);
+  }
+  .pdv2-trust { display: none; }
+  .pdv2-page { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+}
