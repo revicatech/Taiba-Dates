@@ -103,7 +103,8 @@ export async function fetchProducts(options: FetchProductsOptions = {}): Promise
       .limit(limit)
       .lean();
     return docs.map((d) => mapProduct(d as unknown as Record<string, unknown>));
-  } catch {
+  } catch (err) {
+    console.error("[fetchProducts] error:", err);
     return [];
   }
 }

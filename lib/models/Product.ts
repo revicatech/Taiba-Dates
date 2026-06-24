@@ -50,5 +50,6 @@ const productSchema = new Schema<IProduct>(
   { timestamps: true }
 );
 
-export const Product: Model<IProduct> =
-  mongoose.models.Product ?? mongoose.model<IProduct>("Product", productSchema);
+// Delete any cached model so schema changes take effect on hot-reload
+if (mongoose.models.Product) delete mongoose.models.Product;
+export const Product: Model<IProduct> = mongoose.model<IProduct>("Product", productSchema);
