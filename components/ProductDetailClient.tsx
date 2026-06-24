@@ -35,33 +35,34 @@ export default function ProductDetailClient({
   const [activeSub, setActiveSub] = useState(usedSubIds[0] ?? "");
   const [activeSize, setActiveSize] = useState<ProductSize | null>(null);
   const sliderRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const slideIdxRef = useRef(0);
 
   const visibleSizes = sizes.filter((s) => (s.subCategoryId || "") === activeSub);
 
+  // Always auto-slide through visible sizes
   useEffect(() => {
+    slideIdxRef.current = 0;
     setActiveSize(visibleSizes[0] ?? null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSub]);
 
-  // Auto-cycle through images of the active sub
-  useEffect(() => {
-    if (visibleSizes.length <= 1) return;
-    let i = 0;
+    if (visibleSizes.length < 2) return;
+
+    if (sliderRef.current) clearInterval(sliderRef.current);
     sliderRef.current = setInterval(() => {
-      i = (i + 1) % visibleSizes.length;
-      setActiveSize(visibleSizes[i]);
-    }, 3500);
+      slideIdxRef.current = (slideIdxRef.current + 1) % visibleSizes.length;
+      setActiveSize(visibleSizes[slideIdxRef.current]);
+    }, 3000);
     return () => { if (sliderRef.current) clearInterval(sliderRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSub, visibleSizes.length]);
 
+  // Clicking a size: jump to it and sync the slider index, but keep it running
   function pickSize(s: ProductSize) {
-    if (sliderRef.current) clearInterval(sliderRef.current);
+    const idx = visibleSizes.findIndex((v) => v.label === s.label);
+    if (idx >= 0) slideIdxRef.current = idx;
     setActiveSize(s);
   }
 
   function pickSub(id: string) {
-    if (sliderRef.current) clearInterval(sliderRef.current);
     setActiveSub(id);
   }
 
