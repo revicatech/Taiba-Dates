@@ -34,13 +34,13 @@ export default async function ProductDetailPage({ params }: Props) {
         <div className="pdv2-container">
 
           {/* Breadcrumb */}
-          <nav className="pdv2-breadcrumb" aria-label="breadcrumb">
+          <div className="pdv2-breadcrumb" aria-label="breadcrumb">
             <a href="/">الرئيسية</a>
             <span>/</span>
             <a href="/products">المنتجات</a>
             <span>/</span>
             <span>{product.nameAR}</span>
-          </nav>
+          </div>
 
           <ProductDetailClient
             nameAR={product.nameAR}
