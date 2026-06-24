@@ -10,38 +10,26 @@ export default function ProductsPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function refresh() {
-    try {
-      const data = await productsApi.list({ limit: 100 });
-      setProducts(data.items);
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "فشل تحميل المنتجات");
-    }
+    try { setProducts((await productsApi.list({ limit: 100 })).items); }
+    catch (err) { setError(err instanceof ApiError ? err.message : "فشل تحميل المنتجات"); }
   }
 
-  useEffect(() => {
-    refresh();
-  }, []);
+  useEffect(() => { refresh(); }, []);
 
   async function onDelete(id: string) {
     if (!confirm("حذف هذا المنتج؟")) return;
-    try {
-      await productsApi.remove(id);
-      await refresh();
-    } catch (err) {
-      alert(err instanceof ApiError ? err.message : "فشل الحذف");
-    }
+    try { await productsApi.remove(id); await refresh(); }
+    catch (err) { alert(err instanceof ApiError ? err.message : "فشل الحذف"); }
   }
 
   return (
     <AdminShell>
       <div className="admin-page-header">
         <div>
-          <span className="admin-page-eyebrow">Our Collection — مجموعتنا</span>
-          <h1 className="admin-page-title">المنتجات</h1>
+          <span className="admin-page-eyebrow">Products — المنتجات</span>
+          <h1 className="admin-page-title">إدارة المنتجات</h1>
         </div>
-        <Link href="/admin/products/new" className="admin-btn admin-btn-primary">
-          + منتج جديد
-        </Link>
+        <Link href="/admin/products/new" className="admin-btn admin-btn-primary">+ منتج جديد</Link>
       </div>
 
       <div className="admin-table-wrap">
@@ -58,42 +46,43 @@ export default function ProductsPage() {
                 <th style={{ width: 80 }}>الصورة</th>
                 <th>الاسم</th>
                 <th>الفئة</th>
-                <th style={{ width: 80 }}>مميز</th>
+                <th>الأحجام</th>
+                <th style={{ width: 60 }}>مميز</th>
                 <th style={{ width: 160 }}></th>
               </tr>
             </thead>
             <tbody>
-              {products.map((p) => (
-                <tr key={p._id}>
-                  <td>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.imageUrl} alt={p.nameAR} className="admin-table-thumb" />
-                  </td>
-                  <td>
-                    <div className="admin-table-name">{p.nameAR}</div>
-                    {p.nameEN && <div style={{ fontSize: 12, color: "var(--color-text-muted, #888)" }}>{p.nameEN}</div>}
-                    {p.slug && <div style={{ fontSize: 11, color: "var(--color-text-muted, #888)", fontFamily: "monospace" }}>/{p.slug}</div>}
-                  </td>
-                  <td>{p.category?.nameAR ?? "—"}</td>
-                  <td style={{ textAlign: "center" }}>{p.featured ? "⭐" : "—"}</td>
-                  <td>
-                    <div className="admin-table-actions">
-                      <Link
-                        href={`/admin/products/${p._id}`}
-                        className="admin-btn admin-btn-secondary admin-btn-sm"
-                      >
-                        تعديل
-                      </Link>
-                      <button
-                        className="admin-btn admin-btn-danger admin-btn-sm"
-                        onClick={() => onDelete(p._id)}
-                      >
-                        حذف
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {products.map((p) => {
+                const cover = p.sizes[0]?.imageUrl ?? "";
+                return (
+                  <tr key={p._id}>
+                    <td>
+                      {cover && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={cover} alt={p.nameAR} className="admin-table-thumb" />
+                      )}
+                    </td>
+                    <td>
+                      <div className="admin-table-name">{p.nameAR}</div>
+                      {p.nameEN && <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{p.nameEN}</div>}
+                    </td>
+                    <td>{p.category?.nameAR ?? "—"}</td>
+                    <td>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                        {p.sizes.slice(0, 4).map((s) => <span key={s.label} className="cat-sub-chip">{s.label}</span>)}
+                        {p.sizes.length > 4 && <span className="cat-sub-chip">+{p.sizes.length - 4}</span>}
+                      </div>
+                    </td>
+                    <td style={{ textAlign: "center" }}>{p.featured ? "⭐" : "—"}</td>
+                    <td>
+                      <div className="admin-table-actions">
+                        <Link href={`/admin/products/${p._id}`} className="admin-btn admin-btn-secondary admin-btn-sm">تعديل</Link>
+                        <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => onDelete(p._id)}>حذف</button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

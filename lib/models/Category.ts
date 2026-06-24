@@ -1,16 +1,27 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
-export interface ICategory extends Document {
-  nameEN: string;
+export interface ISubCategory {
+  _id: mongoose.Types.ObjectId;
   nameAR: string;
-  slug: string;
+  nameEN?: string;
 }
+
+export interface ICategory extends Document {
+  nameEN?: string;
+  nameAR: string;
+  subCategories: ISubCategory[];
+}
+
+const subCategorySchema = new Schema<ISubCategory>({
+  nameAR: { type: String, required: true, trim: true },
+  nameEN: { type: String, trim: true, default: "" },
+});
 
 const categorySchema = new Schema<ICategory>(
   {
-    nameEN: { type: String, required: true, unique: true, trim: true },
     nameAR: { type: String, required: true, unique: true, trim: true },
-    slug: { type: String, trim: true, default: "" },
+    nameEN: { type: String, trim: true, default: "" },
+    subCategories: { type: [subCategorySchema], default: [] },
   },
   { timestamps: true }
 );

@@ -23,15 +23,18 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
   try {
     const { id } = await params;
     await requireAdmin();
-    const { nameEN, nameAR } = await req.json();
-    const update: Record<string, string> = {};
-    if (nameEN !== undefined) update.nameEN = nameEN;
+    const { nameAR, nameEN, subCategories } = await req.json();
+    const update: Record<string, unknown> = {};
     if (nameAR !== undefined) update.nameAR = nameAR;
+    if (nameEN !== undefined) update.nameEN = nameEN;
+    if (subCategories !== undefined) {
+      update.subCategories = subCategories.map((s: { nameAR: string; nameEN?: string }) => ({
+        nameAR: s.nameAR,
+        nameEN: s.nameEN || "",
+      }));
+    }
     await connectDB();
-    const category = await Category.findByIdAndUpdate(id, update, {
-      new: true,
-      runValidators: true,
-    });
+    const category = await Category.findByIdAndUpdate(id, update, { new: true, runValidators: true });
     if (!category) return NextResponse.json({ message: "Category not found" }, { status: 404 });
     return NextResponse.json(category);
   } catch (err) {
@@ -47,7 +50,7 @@ export async function DELETE(_req: NextRequest, { params }: Ctx): Promise<NextRe
     const inUse = await Product.exists({ category: id });
     if (inUse) {
       return NextResponse.json(
-        { message: "Cannot delete category that still has products. Reassign or delete those products first." },
+        { message: "لا يمكن حذف فئة تحتوي على منتجات. احذف المنتجات أولاً." },
         { status: 409 }
       );
     }

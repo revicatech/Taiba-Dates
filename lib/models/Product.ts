@@ -1,32 +1,43 @@
 import mongoose, { Schema, Document, Model, Types } from "mongoose";
 
-export interface IProduct extends Document {
-  nameAR: string;
-  nameEN: string;
-  slug: string;
-  description: string;
-  fullDescription: string;
-  category: Types.ObjectId;
-  featured: boolean;
+export interface IProductSize {
+  subCategoryId?: string;
+  label: string;
   imageUrl: string;
   imagePublicId: string;
-  weights: string[];
-  features: string[];
 }
+
+export interface IProduct extends Document {
+  nameAR: string;
+  nameEN?: string;
+  description?: string;
+  fullDescription?: string;
+  category: Types.ObjectId;
+  featured: boolean;
+  features: string[];
+  sizes: IProductSize[];
+}
+
+const productSizeSchema = new Schema<IProductSize>(
+  {
+    subCategoryId: { type: String, default: "" },
+    label: { type: String, required: true, trim: true },
+    imageUrl: { type: String, required: true },
+    imagePublicId: { type: String, required: true },
+  },
+  { _id: false }
+);
 
 const productSchema = new Schema<IProduct>(
   {
     nameAR: { type: String, required: true, trim: true },
     nameEN: { type: String, trim: true, default: "" },
-    slug: { type: String, required: true, unique: true, trim: true, lowercase: true },
     description: { type: String, trim: true, default: "" },
     fullDescription: { type: String, trim: true, default: "" },
     category: { type: Schema.Types.ObjectId, ref: "Category", required: true, index: true },
     featured: { type: Boolean, default: false },
-    imageUrl: { type: String, required: true },
-    imagePublicId: { type: String, required: true },
-    weights: { type: [String], default: [] },
     features: { type: [String], default: [] },
+    sizes: { type: [productSizeSchema], default: [] },
   },
   { timestamps: true }
 );

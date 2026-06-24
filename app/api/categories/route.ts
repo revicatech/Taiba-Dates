@@ -17,15 +17,19 @@ export async function GET(): Promise<NextResponse> {
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     await requireAdmin();
-    const { nameEN, nameAR } = await req.json();
-    if (!nameEN || !nameAR) {
-      return NextResponse.json(
-        { message: "nameEN and nameAR are required" },
-        { status: 400 }
-      );
+    const { nameAR, nameEN, subCategories } = await req.json();
+    if (!nameAR) {
+      return NextResponse.json({ message: "nameAR is required" }, { status: 400 });
     }
     await connectDB();
-    const category = await Category.create({ nameEN, nameAR });
+    const category = await Category.create({
+      nameAR,
+      nameEN: nameEN || "",
+      subCategories: (subCategories || []).map((s: { nameAR: string; nameEN?: string }) => ({
+        nameAR: s.nameAR,
+        nameEN: s.nameEN || "",
+      })),
+    });
     return NextResponse.json(category, { status: 201 });
   } catch (err) {
     return handleApiError(err);

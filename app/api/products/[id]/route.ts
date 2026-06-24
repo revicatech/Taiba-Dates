@@ -30,22 +30,18 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
 
     const nameAR = formData.get("nameAR") as string | null;
     const nameEN = formData.get("nameEN") as string | null;
-    const slug = formData.get("slug") as string | null;
     const description = formData.get("description") as string | null;
     const fullDescription = formData.get("fullDescription") as string | null;
     const category = formData.get("category") as string | null;
     const featured = formData.get("featured");
-    const weightsRaw = formData.get("weights") as string | null;
     const featuresRaw = formData.get("features") as string | null;
-    const imageFile = formData.get("image") as File | null;
+    const sizesRaw = formData.get("sizes") as string | null;
 
     if (nameAR !== null) update.nameAR = nameAR;
     if (nameEN !== null) update.nameEN = nameEN;
-    if (slug !== null) update.slug = slug;
     if (description !== null) update.description = description;
     if (fullDescription !== null) update.fullDescription = fullDescription;
     if (featured !== null) update.featured = featured === "true";
-    if (weightsRaw !== null) update.weights = JSON.parse(weightsRaw);
     if (featuresRaw !== null) update.features = JSON.parse(featuresRaw);
 
     if (category !== null) {
@@ -60,18 +56,26 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
       update.category = category;
     }
 
-    if (imageFile && imageFile.size > 0) {
-      const { url, publicId } = await uploadToCloudinary(imageFile);
-      update.imageUrl = url;
-      update.imagePublicId = publicId;
+    if (sizesRaw !== null) {
+      await connectDB();
+      const sizesData: { subCategoryId?: string; label: string; imageUrl?: string; imagePublicId?: string }[] = JSON.parse(sizesRaw);
+      const processedSizes = [];
+      for (let i = 0; i < sizesData.length; i++) {
+        const file = formData.get(`image_${i}`) as File | null;
+        if (file && file.size > 0) {
+          const { url, publicId } = await uploadToCloudinary(file);
+          processedSizes.push({ subCategoryId: sizesData[i].subCategoryId ?? "", label: sizesData[i].label, imageUrl: url, imagePublicId: publicId });
+        } else if (sizesData[i].imageUrl) {
+          processedSizes.push({ subCategoryId: sizesData[i].subCategoryId ?? "", label: sizesData[i].label, imageUrl: sizesData[i].imageUrl!, imagePublicId: sizesData[i].imagePublicId! });
+        } else {
+          return NextResponse.json({ message: `صورة مطلوبة للحجم: ${sizesData[i].label}` }, { status: 400 });
+        }
+      }
+      update.sizes = processedSizes;
     }
 
     await connectDB();
-    const product = await Product.findByIdAndUpdate(id, update, {
-      new: true,
-      runValidators: true,
-    }).populate("category");
-
+    const product = await Product.findByIdAndUpdate(id, update, { new: true, runValidators: true }).populate("category");
     if (!product) return NextResponse.json({ message: "Product not found" }, { status: 404 });
     return NextResponse.json(product);
   } catch (err) {

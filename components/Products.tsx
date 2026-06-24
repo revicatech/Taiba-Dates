@@ -17,56 +17,44 @@ export default async function Products() {
         </RevealOnScroll>
 
         {products.length === 0 ? (
-          <RevealOnScroll
-            style={{
-              textAlign: "center",
-              padding: "64px 24px",
-              color: "var(--color-text-muted)",
-            }}
-          >
+          <RevealOnScroll style={{ textAlign: "center", padding: "64px 24px", color: "var(--color-text-muted)" }}>
             <p>سيتم عرض المنتجات قريبًا.</p>
           </RevealOnScroll>
         ) : (
           <div className="products-grid">
-            {products.map((p, i) => (
-              <RevealOnScroll
-                key={p._id}
-                style={{ transitionDelay: `${(i % 3) * 100}ms` }}
-              >
-                <a href={`/products/${p.slug}`} className="product-card" style={{ textDecoration: "none", display: "block" }}>
-                  <div className="product-img">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={p.imageUrl}
-                      alt={p.nameAR}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                    />
-                  </div>
-                  <div className="product-info">
-                    {p.category && (
-                      <span className="product-variety">
-                        {p.category.nameEN} — {p.category.nameAR}
-                      </span>
-                    )}
-                    <div className="product-name-ar">{p.nameAR}</div>
-                    {p.nameEN && <div className="product-name-en">{p.nameEN}</div>}
-                    {p.description && (
-                      <p className="product-description">{p.description}</p>
-                    )}
-                    {p.weights.length > 0 && (
-                      <div className="product-weights">
-                        {p.weights.map((w) => (
-                          <span key={w} className="weight-pill">{w}</span>
-                        ))}
-                      </div>
-                    )}
-                    <div className="product-footer">
-                      <span className="product-btn">عرض المنتج ←</span>
+            {products.map((p, i) => {
+              const coverImage = p.sizes[0]?.imageUrl ?? "";
+              return (
+                <RevealOnScroll key={p._id} style={{ transitionDelay: `${(i % 3) * 100}ms` }}>
+                  <a href={`/products/${p._id}`} className="product-card" style={{ textDecoration: "none", display: "block" }}>
+                    <div className="product-img">
+                      {coverImage && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={coverImage} alt={p.nameAR} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      )}
                     </div>
-                  </div>
-                </a>
-              </RevealOnScroll>
-            ))}
+                    <div className="product-info">
+                      {p.category && (
+                        <span className="product-variety">{p.category.nameEN} — {p.category.nameAR}</span>
+                      )}
+                      <div className="product-name-ar">{p.nameAR}</div>
+                      {p.nameEN && <div className="product-name-en">{p.nameEN}</div>}
+                      {p.description && <p className="product-description">{p.description}</p>}
+                      {p.sizes.length > 0 && (
+                        <div className="product-weights">
+                          {p.sizes.map((s) => (
+                            <span key={s.label} className="weight-pill">{s.label}</span>
+                          ))}
+                        </div>
+                      )}
+                      <div className="product-footer">
+                        <span className="product-btn">عرض المنتج ←</span>
+                      </div>
+                    </div>
+                  </a>
+                </RevealOnScroll>
+              );
+            })}
           </div>
         )}
 

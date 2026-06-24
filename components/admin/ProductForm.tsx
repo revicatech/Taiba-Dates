@@ -1,73 +1,66 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ApiError, categoriesApi, productsApi, type Category, type Product } from "@/lib/api";
+import { ApiError, categoriesApi, productsApi, type Category, type Product, type ProductSize } from "@/lib/api";
 
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[\s_]+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "");
+type SizeRow = {
+  key: string;
+  subCategoryId: string;
+  label: string;
+  imageUrl: string;
+  imagePublicId: string;
+  previewUrl: string;
+  file: File | null;
+};
+
+let _key = 0;
+const uid = () => String(++_key);
+
+function rowFromSize(s: ProductSize): SizeRow {
+  return { key: uid(), subCategoryId: s.subCategoryId, label: s.label, imageUrl: s.imageUrl, imagePublicId: s.imagePublicId, previewUrl: s.imageUrl, file: null };
 }
 
-type Props = {
-  mode: "create" | "edit";
-  initial?: Product;
-};
+type Props = { mode: "create" | "edit"; initial?: Product };
 
 export default function ProductForm({ mode, initial }: Props) {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [nameAR, setNameAR] = useState(initial?.nameAR ?? "");
   const [nameEN, setNameEN] = useState(initial?.nameEN ?? "");
-  const [slug, setSlug] = useState(initial?.slug ?? "");
-  const [slugTouched, setSlugTouched] = useState(false);
   const [description, setDescription] = useState(initial?.description ?? "");
   const [fullDescription, setFullDescription] = useState(initial?.fullDescription ?? "");
   const [categoryId, setCategoryId] = useState(initial?.category?._id ?? "");
   const [featured, setFeatured] = useState(initial?.featured ?? false);
-  const [weights, setWeights] = useState<string[]>(initial?.weights ?? []);
-  const [weightInput, setWeightInput] = useState("");
   const [features, setFeatures] = useState<string[]>(initial?.features ?? []);
   const [featureInput, setFeatureInput] = useState("");
-  const [file, setFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(initial?.imageUrl ?? null);
+  const [sizes, setSizes] = useState<SizeRow[]>((initial?.sizes ?? []).map(rowFromSize));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const selectedCategory = categories.find((c) => c._id === categoryId);
+  const subCats = selectedCategory?.subCategories ?? [];
+
   useEffect(() => {
-    categoriesApi
-      .list()
-      .then(setCategories)
-      .catch((err) => setError(err instanceof ApiError ? err.message : "فشل تحميل الفئات"));
+    categoriesApi.list().then(setCategories).catch((err) => setError(err instanceof ApiError ? err.message : "فشل تحميل الفئات"));
   }, []);
 
-  useEffect(() => {
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
-
-  // Auto-generate slug from nameEN when not manually edited
-  useEffect(() => {
-    if (!slugTouched && nameEN) {
-      setSlug(slugify(nameEN));
-    }
-  }, [nameEN, slugTouched]);
-
-  function addWeight() {
-    const w = weightInput.trim();
-    if (w && !weights.includes(w)) setWeights((prev) => [...prev, w]);
-    setWeightInput("");
+  function addSize() {
+    setSizes((prev) => [...prev, { key: uid(), subCategoryId: "", label: "", imageUrl: "", imagePublicId: "", previewUrl: "", file: null }]);
   }
 
-  function removeWeight(w: string) {
-    setWeights((prev) => prev.filter((x) => x !== w));
+  function removeSize(key: string) {
+    setSizes((prev) => prev.filter((r) => r.key !== key));
+  }
+
+  function updateSize(key: string, patch: Partial<SizeRow>) {
+    setSizes((prev) => prev.map((r) => (r.key === key ? { ...r, ...patch } : r)));
+  }
+
+  function onSizeFile(key: string, file: File | null) {
+    if (!file) return;
+    const previewUrl = URL.createObjectURL(file);
+    updateSize(key, { file, previewUrl });
   }
 
   function addFeature() {
@@ -84,42 +77,36 @@ export default function ProductForm({ mode, initial }: Props) {
     e.preventDefault();
     setError(null);
 
-    if (mode === "create" && !file) {
-      setError("يرجى اختيار صورة المنتج");
-      return;
-    }
-    if (!categoryId) {
-      setError("يرجى اختيار فئة");
-      return;
-    }
-    if (!nameAR) {
-      setError("الاسم بالعربية مطلوب");
-      return;
-    }
-    if (!slug) {
-      setError("يرجى إدخال slug المنتج");
-      return;
+    if (!nameAR) { setError("الاسم بالعربية مطلوب"); return; }
+    if (!categoryId) { setError("يرجى اختيار الفئة"); return; }
+    if (sizes.length === 0) { setError("يرجى إضافة حجم واحد على الأقل مع صورته"); return; }
+
+    for (const s of sizes) {
+      if (!s.label) { setError("يرجى إدخال تسمية لكل حجم"); return; }
+      if (mode === "create" && !s.file) { setError(`يرجى رفع صورة للحجم: ${s.label}`); return; }
+      if (mode === "edit" && !s.file && !s.imageUrl) { setError(`يرجى رفع صورة للحجم: ${s.label}`); return; }
     }
 
     const form = new FormData();
     form.append("nameAR", nameAR);
     form.append("nameEN", nameEN);
-    form.append("slug", slug);
     form.append("description", description);
     form.append("fullDescription", fullDescription);
     form.append("category", categoryId);
     form.append("featured", String(featured));
-    form.append("weights", JSON.stringify(weights));
     form.append("features", JSON.stringify(features));
-    if (file) form.append("image", file);
+    form.append("sizes", JSON.stringify(sizes.map((s) => ({
+      subCategoryId: s.subCategoryId,
+      label: s.label,
+      imageUrl: s.imageUrl,
+      imagePublicId: s.imagePublicId,
+    }))));
+    sizes.forEach((s, i) => { if (s.file) form.append(`image_${i}`, s.file); });
 
     setSubmitting(true);
     try {
-      if (mode === "create") {
-        await productsApi.create(form);
-      } else if (initial) {
-        await productsApi.update(initial._id, form);
-      }
+      if (mode === "create") await productsApi.create(form);
+      else if (initial) await productsApi.update(initial._id, form);
       router.push("/admin/products");
       router.refresh();
     } catch (err) {
@@ -130,195 +117,170 @@ export default function ProductForm({ mode, initial }: Props) {
   }
 
   return (
-    <form className="admin-form" onSubmit={onSubmit}>
-      {error && <div className="admin-alert admin-alert-error">{error}</div>}
+    <form className="pf-form" onSubmit={onSubmit}>
+      {error && <div className="admin-alert admin-alert-error pf-error">{error}</div>}
 
-      <div className="admin-form-row">
-        <label htmlFor="nameAR">اسم المنتج بالعربية *</label>
-        <input
-          id="nameAR"
-          className="admin-input"
-          value={nameAR}
-          onChange={(e) => setNameAR(e.target.value)}
-          required
-          placeholder="مثال: تمر المجدول"
-        />
-      </div>
+      <div className="pf-grid">
+        {/* ─── LEFT COLUMN: Basic Info ─── */}
+        <div className="pf-col">
+          <div className="pf-section-title">المعلومات الأساسية</div>
 
-      <div className="admin-form-row">
-        <label htmlFor="nameEN">اسم المنتج بالإنجليزية</label>
-        <input
-          id="nameEN"
-          className="admin-input"
-          value={nameEN}
-          onChange={(e) => setNameEN(e.target.value)}
-          placeholder="e.g. Medjool Dates"
-        />
-      </div>
+          <div className="pf-field">
+            <label className="pf-label">الاسم بالعربية <span className="pf-req">*</span></label>
+            <input className="pf-input" value={nameAR} onChange={(e) => setNameAR(e.target.value)} required placeholder="مثال: تمر المجدول الفاخر" />
+          </div>
 
-      <div className="admin-form-row">
-        <label htmlFor="slug">
-          Slug (رابط المنتج) *
-          <small style={{ fontWeight: 400, marginRight: 8, color: "var(--admin-text-muted, #888)" }}>
-            — يُستخدم في الرابط: /products/<strong>{slug || "medjool-dates"}</strong>
-          </small>
-        </label>
-        <input
-          id="slug"
-          className="admin-input"
-          value={slug}
-          onChange={(e) => { setSlug(e.target.value); setSlugTouched(true); }}
-          required
-          placeholder="medjool-dates"
-          dir="ltr"
-        />
-      </div>
+          <div className="pf-field">
+            <label className="pf-label">الاسم بالإنجليزية <span className="pf-opt">(اختياري)</span></label>
+            <input className="pf-input" value={nameEN} onChange={(e) => setNameEN(e.target.value)} placeholder="e.g. Medjool Dates" dir="ltr" />
+          </div>
 
-      <div className="admin-form-row">
-        <label htmlFor="category">الفئة *</label>
-        <select
-          id="category"
-          className="admin-select"
-          value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
-          required
-        >
-          <option value="">-- اختر فئة --</option>
-          {categories.map((c) => (
-            <option key={c._id} value={c._id}>
-              {c.nameAR} — {c.nameEN}
-            </option>
-          ))}
-        </select>
-      </div>
+          <div className="pf-field">
+            <label className="pf-label">الفئة <span className="pf-req">*</span></label>
+            <select className="pf-select" value={categoryId} onChange={(e) => { setCategoryId(e.target.value); setSizes((prev) => prev.map((s) => ({ ...s, subCategoryId: "" }))); }} required>
+              <option value="">-- اختر الفئة --</option>
+              {categories.map((c) => <option key={c._id} value={c._id}>{c.nameAR}{c.nameEN ? ` — ${c.nameEN}` : ""}</option>)}
+            </select>
+          </div>
 
-      <div className="admin-form-row">
-        <label htmlFor="description">الوصف المختصر</label>
-        <textarea
-          id="description"
-          className="admin-input"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={2}
-          placeholder="وصف قصير يظهر على بطاقة المنتج"
-          style={{ resize: "vertical" }}
-        />
-      </div>
+          <div className="pf-field">
+            <label className="pf-label">الوصف المختصر <span className="pf-opt">(اختياري)</span></label>
+            <textarea className="pf-input pf-textarea" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="جملة أو جملتان تظهران على بطاقة المنتج" />
+          </div>
 
-      <div className="admin-form-row">
-        <label htmlFor="fullDescription">الوصف التفصيلي</label>
-        <textarea
-          id="fullDescription"
-          className="admin-input"
-          value={fullDescription}
-          onChange={(e) => setFullDescription(e.target.value)}
-          rows={5}
-          placeholder="وصف مفصل يظهر في صفحة المنتج"
-          style={{ resize: "vertical" }}
-        />
-      </div>
+          <div className="pf-field">
+            <label className="pf-label">الوصف التفصيلي <span className="pf-opt">(اختياري)</span></label>
+            <textarea className="pf-input pf-textarea" rows={4} value={fullDescription} onChange={(e) => setFullDescription(e.target.value)} placeholder="وصف مفصل يظهر في صفحة المنتج" />
+          </div>
 
-      {/* Weights */}
-      <div className="admin-form-row">
-        <label>الأوزان المتاحة</label>
-        <div className="admin-tags-input">
-          <div className="admin-tags-list">
-            {weights.map((w) => (
-              <span key={w} className="admin-tag">
-                {w}
-                <button type="button" onClick={() => removeWeight(w)}>×</button>
-              </span>
+          <div className="pf-field">
+            <label className="pf-label">المميزات <span className="pf-opt">(اختياري)</span></label>
+            <div className="pf-tags-list">
+              {features.map((f) => (
+                <span key={f} className="pf-tag">{f}<button type="button" onClick={() => removeFeature(f)}>×</button></span>
+              ))}
+            </div>
+            <div className="pf-tag-row">
+              <input className="pf-input" value={featureInput} onChange={(e) => setFeatureInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addFeature(); } }}
+                placeholder="مثال: طبيعي 100%" />
+              <button type="button" className="pf-btn-secondary" onClick={addFeature}>إضافة</button>
+            </div>
+          </div>
+
+          <div className="pf-field">
+            <label className="pf-checkbox-label">
+              <input type="checkbox" className="pf-checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} />
+              <span>عرض على الصفحة الرئيسية (مميز)</span>
+            </label>
+            <p className="pf-hint">يُعرض بحد أقصى 3 منتجات مميزة على الصفحة الرئيسية</p>
+          </div>
+        </div>
+
+        {/* ─── RIGHT COLUMN: Sizes & Images ─── */}
+        <div className="pf-col">
+          <div className="pf-section-title">
+            الأحجام والصور
+            <span className="pf-section-sub">كل حجم له صورة خاصة به</span>
+          </div>
+
+          {sizes.length === 0 && (
+            <div className="pf-empty-sizes">اضغط «+ إضافة حجم» لبدء إضافة الأحجام والصور</div>
+          )}
+
+          <div className="pf-sizes-list">
+            {sizes.map((row, i) => (
+              <SizeCard
+                key={row.key}
+                row={row}
+                index={i}
+                subCats={subCats}
+                onUpdate={(patch) => updateSize(row.key, patch)}
+                onFile={(file) => onSizeFile(row.key, file)}
+                onRemove={() => removeSize(row.key)}
+              />
             ))}
           </div>
-          <div className="admin-tag-add">
-            <input
-              className="admin-input"
-              value={weightInput}
-              onChange={(e) => setWeightInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addWeight(); } }}
-              placeholder="مثال: 500g"
-              dir="ltr"
-            />
-            <button type="button" className="admin-btn admin-btn-secondary" onClick={addWeight}>
-              إضافة
-            </button>
-          </div>
+
+          <button type="button" className="pf-add-size" onClick={addSize}>
+            + إضافة حجم
+          </button>
         </div>
       </div>
 
-      {/* Features */}
-      <div className="admin-form-row">
-        <label>مميزات المنتج</label>
-        <div className="admin-tags-input">
-          <div className="admin-tags-list">
-            {features.map((f) => (
-              <span key={f} className="admin-tag">
-                {f}
-                <button type="button" onClick={() => removeFeature(f)}>×</button>
-              </span>
-            ))}
-          </div>
-          <div className="admin-tag-add">
-            <input
-              className="admin-input"
-              value={featureInput}
-              onChange={(e) => setFeatureInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addFeature(); } }}
-              placeholder="مثال: 100% Natural"
-            />
-            <button type="button" className="admin-btn admin-btn-secondary" onClick={addFeature}>
-              إضافة
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Featured */}
-      <div className="admin-form-row">
-        <label className="admin-checkbox-label">
-          <input
-            type="checkbox"
-            checked={featured}
-            onChange={(e) => setFeatured(e.target.checked)}
-            className="admin-checkbox"
-          />
-          عرض على الصفحة الرئيسية (منتج مميز)
-        </label>
-        <small style={{ color: "var(--admin-text-muted, #888)", display: "block", marginTop: 4 }}>
-          يُعرض بحد أقصى 3 منتجات مميزة على الصفحة الرئيسية.
-        </small>
-      </div>
-
-      {/* Image */}
-      <div className="admin-form-row">
-        <label htmlFor="image">
-          صورة المنتج {mode === "edit" && "(اتركها فارغة للإبقاء على الصورة الحالية)"}
-        </label>
-        <input
-          id="image"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          className="admin-file"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        />
-        {previewUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={previewUrl} alt="معاينة" className="admin-image-preview" />
-        )}
-      </div>
-
-      <div className="admin-form-actions">
-        <button type="submit" className="admin-btn admin-btn-primary" disabled={submitting}>
-          {submitting ? "..." : mode === "create" ? "إضافة منتج" : "حفظ التغييرات"}
+      <div className="pf-actions">
+        <button type="submit" className="pf-btn-primary" disabled={submitting}>
+          {submitting ? "جاري الحفظ..." : mode === "create" ? "إضافة المنتج" : "حفظ التغييرات"}
         </button>
-        <button
-          type="button"
-          className="admin-btn admin-btn-secondary"
-          onClick={() => router.push("/admin/products")}
-        >
+        <button type="button" className="pf-btn-secondary" onClick={() => router.push("/admin/products")}>
           إلغاء
         </button>
       </div>
     </form>
+  );
+}
+
+// ─── Size Card sub-component ───
+type SizeCardProps = {
+  row: SizeRow;
+  index: number;
+  subCats: { _id: string; nameAR: string; nameEN: string }[];
+  onUpdate: (patch: Partial<SizeRow>) => void;
+  onFile: (file: File | null) => void;
+  onRemove: () => void;
+};
+
+function SizeCard({ row, index, subCats, onUpdate, onFile, onRemove }: SizeCardProps) {
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="pf-size-card">
+      <div className="pf-size-header">
+        <span className="pf-size-num">#{index + 1}</span>
+        <button type="button" className="pf-size-remove" onClick={onRemove} title="حذف هذا الحجم">×</button>
+      </div>
+
+      <div className="pf-size-body">
+        {/* Image area */}
+        <div className="pf-size-img-area" onClick={() => fileRef.current?.click()}>
+          {row.previewUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={row.previewUrl} alt="معاينة" className="pf-size-preview" />
+          ) : (
+            <div className="pf-size-img-placeholder">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+              <span>اضغط لرفع صورة</span>
+            </div>
+          )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            style={{ display: "none" }}
+            onChange={(e) => onFile(e.target.files?.[0] ?? null)}
+          />
+        </div>
+
+        {/* Fields */}
+        <div className="pf-size-fields">
+          {subCats.length > 0 && (
+            <div className="pf-field">
+              <label className="pf-label-sm">النوع الفرعي <span className="pf-opt">(اختياري)</span></label>
+              <select className="pf-select pf-select-sm" value={row.subCategoryId} onChange={(e) => onUpdate({ subCategoryId: e.target.value })}>
+                <option value="">-- بدون تصنيف فرعي --</option>
+                {subCats.map((s) => <option key={s._id} value={s._id}>{s.nameAR}{s.nameEN ? ` — ${s.nameEN}` : ""}</option>)}
+              </select>
+            </div>
+          )}
+          <div className="pf-field">
+            <label className="pf-label-sm">الحجم / الوزن <span className="pf-req">*</span></label>
+            <input className="pf-input pf-input-sm" value={row.label} onChange={(e) => onUpdate({ label: e.target.value })} placeholder="مثال: 500g أو 1kg" dir="ltr" required />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

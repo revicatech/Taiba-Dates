@@ -21,16 +21,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       }
       filter.category = categoryParam;
     }
-
     const [items, total] = await Promise.all([
-      Product.find(filter)
-        .populate("category")
-        .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit),
+      Product.find(filter).populate("category").sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
       Product.countDocuments(filter),
     ]);
-
     return NextResponse.json({ items, page, limit, total, pages: Math.ceil(total / limit) });
   } catch (err) {
     return handleApiError(err);
@@ -44,30 +38,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const nameAR = formData.get("nameAR") as string | null;
     const nameEN = (formData.get("nameEN") as string | null) ?? "";
-    const slug = formData.get("slug") as string | null;
     const category = formData.get("category") as string | null;
     const description = (formData.get("description") as string | null) ?? "";
     const fullDescription = (formData.get("fullDescription") as string | null) ?? "";
     const featured = formData.get("featured") === "true";
-    const weightsRaw = formData.get("weights") as string | null;
-    const featuresRaw = formData.get("features") as string | null;
-    const imageFile = formData.get("image") as File | null;
+    const featuresRaw = (formData.get("features") as string | null) ?? "[]";
+    const sizesRaw = (formData.get("sizes") as string | null) ?? "[]";
 
-    if (!nameAR || !slug || !category) {
-      return NextResponse.json({ message: "nameAR, slug and category are required" }, { status: 400 });
+    if (!nameAR || !category) {
+      return NextResponse.json({ message: "nameAR and category are required" }, { status: 400 });
     }
     if (!mongoose.Types.ObjectId.isValid(category)) {
       return NextResponse.json({ message: "Invalid category id" }, { status: 400 });
     }
-    if (!imageFile || imageFile.size === 0) {
-      return NextResponse.json(
-        { message: "image file is required (multipart field 'image')" },
-        { status: 400 }
-      );
-    }
-
-    const weights: string[] = weightsRaw ? JSON.parse(weightsRaw) : [];
-    const features: string[] = featuresRaw ? JSON.parse(featuresRaw) : [];
 
     await connectDB();
     const categoryExists = await Category.exists({ _id: category });
@@ -75,20 +58,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ message: "Referenced category does not exist" }, { status: 400 });
     }
 
-    const { url, publicId } = await uploadToCloudinary(imageFile);
-    const product = await Product.create({
-      nameAR,
-      nameEN,
-      slug,
-      category,
-      description,
-      fullDescription,
-      featured,
-      weights,
-      features,
-      imageUrl: url,
-      imagePublicId: publicId,
-    });
+    const sizesData: { subCategoryId?: string; label: string }[] = JSON.parse(sizesRaw);
+    const features: string[] = JSON.parse(featuresRaw);
+
+    const processedSizes = [];
+    for (let i = 0; i < sizesData.length; i++) {
+      const file = formData.get(`image_${i}`) as File | null;
+      if (!file || file.size === 0) {
+        return NextResponse.json({ message: `صورة مطلوبة للحجم: ${sizesData[i].label}` }, { status: 400 });
+      }
+      const { url, publicId } = await uploadToCloudinary(file);
+      processedSizes.push({ subCategoryId: sizesData[i].subCategoryId ?? "", label: sizesData[i].label, imageUrl: url, imagePublicId: publicId });
+    }
+
+    const product = await Product.create({ nameAR, nameEN, category, description, fullDescription, featured, features, sizes: processedSizes });
     await product.populate("category");
     return NextResponse.json(product, { status: 201 });
   } catch (err) {

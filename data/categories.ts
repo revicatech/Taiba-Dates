@@ -10,8 +10,13 @@ export async function fetchCategories(): Promise<Category[]> {
     const docs = await CategoryModel.find().sort({ createdAt: -1 }).lean();
     return docs.map((d) => ({
       _id: String(d._id),
-      nameEN: d.nameEN,
+      nameEN: d.nameEN ?? "",
       nameAR: d.nameAR,
+      subCategories: (d.subCategories ?? []).map((s) => ({
+        _id: String(s._id),
+        nameAR: s.nameAR,
+        nameEN: s.nameEN ?? "",
+      })),
     }));
   } catch {
     return [];

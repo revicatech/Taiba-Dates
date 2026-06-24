@@ -10,24 +10,14 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {}
-): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    credentials: "include",
-    ...options,
-  });
-
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`, { credentials: "include", ...options });
   if (res.status === 204) return undefined as T;
-
   const body = await res.json().catch(() => ({}));
-
   if (!res.ok) {
     const msg = (body as { message?: string })?.message || res.statusText;
     throw new ApiError(res.status, msg, body);
   }
-
   return body as T;
 }
 
@@ -45,28 +35,35 @@ function formRequest<T>(path: string, method: string, form: FormData): Promise<T
 
 // ============ Types ============
 export type Admin = { _id: string; username: string };
-export type Category = { _id: string; nameEN: string; nameAR: string };
+
+export type SubCategory = { _id: string; nameAR: string; nameEN: string };
+export type Category = {
+  _id: string;
+  nameEN: string;
+  nameAR: string;
+  subCategories: SubCategory[];  // populated on GET, may be [] if not fetched
+};
+
+export type ProductSize = {
+  subCategoryId: string;
+  label: string;
+  imageUrl: string;
+  imagePublicId: string;
+};
+
 export type Product = {
   _id: string;
   nameAR: string;
   nameEN: string;
-  slug: string;
   description: string;
   fullDescription: string;
   category: Category;
   featured: boolean;
-  imageUrl: string;
-  imagePublicId: string;
-  weights: string[];
   features: string[];
+  sizes: ProductSize[];
 };
-export type Paginated<T> = {
-  items: T[];
-  page: number;
-  limit: number;
-  total: number;
-  pages: number;
-};
+
+export type Paginated<T> = { items: T[]; page: number; limit: number; total: number; pages: number };
 
 // ============ Auth ============
 export const authApi = {
@@ -80,9 +77,9 @@ export const authApi = {
 export const categoriesApi = {
   list: () => jsonRequest<Category[]>("/api/categories", "GET"),
   get: (id: string) => jsonRequest<Category>(`/api/categories/${id}`, "GET"),
-  create: (data: { nameEN: string; nameAR: string }) =>
+  create: (data: { nameAR: string; nameEN?: string; subCategories?: { nameAR: string; nameEN?: string }[] }) =>
     jsonRequest<Category>("/api/categories", "POST", data),
-  update: (id: string, data: { nameEN?: string; nameAR?: string }) =>
+  update: (id: string, data: { nameAR?: string; nameEN?: string; subCategories?: { nameAR: string; nameEN?: string }[] }) =>
     jsonRequest<Category>(`/api/categories/${id}`, "PUT", data),
   remove: (id: string) => jsonRequest<void>(`/api/categories/${id}`, "DELETE"),
 };
@@ -99,7 +96,6 @@ export const productsApi = {
   },
   get: (id: string) => jsonRequest<Product>(`/api/products/${id}`, "GET"),
   create: (form: FormData) => formRequest<Product>("/api/products", "POST", form),
-  update: (id: string, form: FormData) =>
-    formRequest<Product>(`/api/products/${id}`, "PUT", form),
+  update: (id: string, form: FormData) => formRequest<Product>(`/api/products/${id}`, "PUT", form),
   remove: (id: string) => jsonRequest<void>(`/api/products/${id}`, "DELETE"),
 };
