@@ -15,12 +15,17 @@ export async function connectDB(): Promise<void> {
   global._mongooseConn = mongoose.connect(uri);
   await global._mongooseConn;
 
-  // Drop the legacy unique index on nameEN that was present in the original
-  // Category schema. It is no longer needed (nameEN is now optional) and causes
-  // duplicate-key errors when multiple categories have an empty nameEN.
-  try {
-    await mongoose.connection.collection("categories").dropIndex("nameEN_1");
-  } catch {
-    // Index doesn't exist or was already dropped — safe to ignore
-  }
+  // Drop stale unique indexes left over from previous schema versions.
+  // Each call is wrapped individually so one failure doesn't block the others.
+  const drop = async (col: string, idx: string) => {
+    try { await mongoose.connection.collection(col).dropIndex(idx); } catch { /* already gone */ }
+  };
+
+  // categories: nameEN was unique in the original schema, now it's optional
+  await drop("categories", "nameEN_1");
+
+  // products: slug was unique when slugs were introduced, then removed entirely
+  await drop("products", "slug_1");
+  // products: name was the original single name field, replaced by nameAR/nameEN
+  await drop("products", "name_1");
 }
