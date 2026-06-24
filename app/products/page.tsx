@@ -26,7 +26,7 @@ export default async function ProductsPage({ searchParams }: Props) {
 
   return (
     <>
-      <Navbar />
+      <Navbar solid />
       <ProductsPageHero totalCount={products.length} activeCategoryName={activeCategory?.nameAR} />
       <section className="products-page-section">
         <div className="container">

@@ -30,7 +30,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
   return (
     <>
-      <Navbar />
+      <Navbar solid />
       <main className="product-detail-page">
         <div className="container">
 

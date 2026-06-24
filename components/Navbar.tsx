@@ -5,7 +5,7 @@ import Link from "next/link";
 import { navLinks } from "@/data/nav";
 import Logo from "@/components/Logo";
 
-export default function Navbar() {
+export default function Navbar({ solid = false }: { solid?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -20,7 +20,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className={scrolled ? "scrolled" : undefined}>
+      <nav className={solid || scrolled ? "scrolled" : undefined}>
         <div className="container">
           <Link href="/" className="nav-logo" aria-label="طيبه للتمور — الصفحة الرئيسية">
             <Logo size={72} priority />
