@@ -40,7 +40,7 @@ export default async function ProductsPage({ searchParams }: Props) {
           ) : (
             <div className="products-grid">
               {products.map((p, i) => {
-                const coverImage = p.sizes[0]?.imageUrl ?? "";
+                const coverImage = p.sizes[0]?.images[0]?.url ?? "";
                 return (
                   <RevealOnScroll key={p._id} style={{ transitionDelay: `${(i % 3) * 80}ms` }}>
                     <a href={`/products/${p._id}`} className="product-card" style={{ textDecoration: "none", display: "block" }}>

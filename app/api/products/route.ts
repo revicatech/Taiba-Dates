@@ -68,13 +68,25 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const features: string[] = JSON.parse(featuresRaw);
 
     const processedSizes = [];
-    for (let i = 0; i < sizesData.length; i++) {
-      const file = formData.get(`image_${i}`) as File | null;
-      if (!file || file.size === 0) {
-        return NextResponse.json({ message: `صورة مطلوبة للحجم: ${sizesData[i].label}` }, { status: 400 });
+    for (let si = 0; si < sizesData.length; si++) {
+      // Collect all image files for this size: image_{si}_0, image_{si}_1, ...
+      const sizeImages: { url: string; publicId: string }[] = [];
+      let imgIdx = 0;
+      while (true) {
+        const file = formData.get(`image_${si}_${imgIdx}`) as File | null;
+        if (!file || file.size === 0) break;
+        const { url, publicId } = await uploadToCloudinary(file);
+        sizeImages.push({ url, publicId });
+        imgIdx++;
       }
-      const { url, publicId } = await uploadToCloudinary(file);
-      processedSizes.push({ subCategoryId: sizesData[i].subCategoryId ?? "", label: sizesData[i].label, imageUrl: url, imagePublicId: publicId });
+      if (sizeImages.length === 0) {
+        return NextResponse.json({ message: `صورة واحدة على الأقل مطلوبة للحجم: ${sizesData[si].label}` }, { status: 400 });
+      }
+      processedSizes.push({
+        subCategoryId: sizesData[si].subCategoryId ?? "",
+        label: sizesData[si].label,
+        images: sizeImages,
+      });
     }
 
     const product = await Product.create({ nameAR, nameEN, category, description, fullDescription, featured, features, sizes: processedSizes });

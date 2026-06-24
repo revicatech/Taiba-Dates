@@ -4,21 +4,27 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, categoriesApi, productsApi, type Category, type Product, type ProductSize } from "@/lib/api";
 
+type PendingFile = { file: File; previewUrl: string };
+
 type SizeRow = {
   key: string;
   subCategoryId: string;
   label: string;
-  imageUrl: string;
-  imagePublicId: string;
-  previewUrl: string;
-  file: File | null;
+  keptImages: { url: string; publicId: string }[]; // already uploaded, will be sent in JSON
+  newFiles: PendingFile[];                          // to be uploaded, sent as image_{si}_{fi}
 };
 
 let _key = 0;
 const uid = () => String(++_key);
 
 function rowFromSize(s: ProductSize): SizeRow {
-  return { key: uid(), subCategoryId: s.subCategoryId, label: s.label, imageUrl: s.imageUrl, imagePublicId: s.imagePublicId, previewUrl: s.imageUrl, file: null };
+  return {
+    key: uid(),
+    subCategoryId: s.subCategoryId,
+    label: s.label,
+    keptImages: s.images ?? [],
+    newFiles: [],
+  };
 }
 
 type Props = { mode: "create" | "edit"; initial?: Product };
@@ -29,7 +35,6 @@ export default function ProductForm({ mode, initial }: Props) {
   const [nameAR, setNameAR] = useState(initial?.nameAR ?? "");
   const [nameEN, setNameEN] = useState(initial?.nameEN ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
-  const [fullDescription, setFullDescription] = useState(initial?.fullDescription ?? "");
   const [categoryId, setCategoryId] = useState(initial?.category?._id ?? "");
   const [featured, setFeatured] = useState(initial?.featured ?? false);
   const [features, setFeatures] = useState<string[]>(initial?.features ?? []);
@@ -46,7 +51,7 @@ export default function ProductForm({ mode, initial }: Props) {
   }, []);
 
   function addSize() {
-    setSizes((prev) => [...prev, { key: uid(), subCategoryId: "", label: "", imageUrl: "", imagePublicId: "", previewUrl: "", file: null }]);
+    setSizes((prev) => [...prev, { key: uid(), subCategoryId: "", label: "", keptImages: [], newFiles: [] }]);
   }
 
   function removeSize(key: string) {
@@ -57,10 +62,27 @@ export default function ProductForm({ mode, initial }: Props) {
     setSizes((prev) => prev.map((r) => (r.key === key ? { ...r, ...patch } : r)));
   }
 
-  function onSizeFile(key: string, file: File | null) {
-    if (!file) return;
-    const previewUrl = URL.createObjectURL(file);
-    updateSize(key, { file, previewUrl });
+  function addSizeFiles(key: string, files: FileList | null) {
+    if (!files) return;
+    const newFiles: PendingFile[] = Array.from(files).map((file) => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }));
+    setSizes((prev) => prev.map((r) => r.key === key ? { ...r, newFiles: [...r.newFiles, ...newFiles] } : r));
+  }
+
+  function removeKeptImage(key: string, idx: number) {
+    setSizes((prev) => prev.map((r) => r.key === key
+      ? { ...r, keptImages: r.keptImages.filter((_, i) => i !== idx) }
+      : r
+    ));
+  }
+
+  function removeNewFile(key: string, idx: number) {
+    setSizes((prev) => prev.map((r) => r.key === key
+      ? { ...r, newFiles: r.newFiles.filter((_, i) => i !== idx) }
+      : r
+    ));
   }
 
   function addFeature() {
@@ -83,25 +105,31 @@ export default function ProductForm({ mode, initial }: Props) {
 
     for (const s of sizes) {
       if (!s.label) { setError("يرجى إدخال تسمية لكل حجم"); return; }
-      if (mode === "create" && !s.file) { setError(`يرجى رفع صورة للحجم: ${s.label}`); return; }
-      if (mode === "edit" && !s.file && !s.imageUrl) { setError(`يرجى رفع صورة للحجم: ${s.label}`); return; }
+      const totalImages = s.keptImages.length + s.newFiles.length;
+      if (totalImages === 0) { setError(`يرجى رفع صورة واحدة على الأقل للحجم: ${s.label || "#"}`); return; }
     }
 
     const form = new FormData();
     form.append("nameAR", nameAR);
     form.append("nameEN", nameEN);
     form.append("description", description);
-    form.append("fullDescription", fullDescription);
     form.append("category", categoryId);
     form.append("featured", String(featured));
     form.append("features", JSON.stringify(features));
+
+    // sizes JSON: label + subCategoryId + kept images (already uploaded)
     form.append("sizes", JSON.stringify(sizes.map((s) => ({
       subCategoryId: s.subCategoryId,
       label: s.label,
-      imageUrl: s.imageUrl,
-      imagePublicId: s.imagePublicId,
+      images: s.keptImages,
     }))));
-    sizes.forEach((s, i) => { if (s.file) form.append(`image_${i}`, s.file); });
+
+    // New files per size: image_{sizeIdx}_{fileIdx}
+    sizes.forEach((s, si) => {
+      s.newFiles.forEach((pf, fi) => {
+        form.append(`image_${si}_${fi}`, pf.file);
+      });
+    });
 
     setSubmitting(true);
     try {
@@ -145,9 +173,8 @@ export default function ProductForm({ mode, initial }: Props) {
 
           <div className="pf-field">
             <label className="pf-label">الوصف المختصر <span className="pf-opt">(اختياري)</span></label>
-            <textarea className="pf-input pf-textarea" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="جملة أو جملتان تظهران على بطاقة المنتج" />
+            <textarea className="pf-input pf-textarea" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="جملة أو جملتان تظهران في صفحة المنتج" />
           </div>
-
 
           <div className="pf-field">
             <label className="pf-label">المميزات <span className="pf-opt">(اختياري)</span></label>
@@ -177,7 +204,7 @@ export default function ProductForm({ mode, initial }: Props) {
         <div className="pf-col">
           <div className="pf-section-title">
             الأحجام والصور
-            <span className="pf-section-sub">كل حجم له صورة خاصة به</span>
+            <span className="pf-section-sub">يمكن إضافة عدة صور لكل حجم</span>
           </div>
 
           {sizes.length === 0 && (
@@ -192,7 +219,9 @@ export default function ProductForm({ mode, initial }: Props) {
                 index={i}
                 subCats={subCats}
                 onUpdate={(patch) => updateSize(row.key, patch)}
-                onFile={(file) => onSizeFile(row.key, file)}
+                onAddFiles={(files) => addSizeFiles(row.key, files)}
+                onRemoveKept={(idx) => removeKeptImage(row.key, idx)}
+                onRemoveNew={(idx) => removeNewFile(row.key, idx)}
                 onRemove={() => removeSize(row.key)}
               />
             ))}
@@ -222,12 +251,15 @@ type SizeCardProps = {
   index: number;
   subCats: { _id: string; nameAR: string; nameEN: string }[];
   onUpdate: (patch: Partial<SizeRow>) => void;
-  onFile: (file: File | null) => void;
+  onAddFiles: (files: FileList | null) => void;
+  onRemoveKept: (idx: number) => void;
+  onRemoveNew: (idx: number) => void;
   onRemove: () => void;
 };
 
-function SizeCard({ row, index, subCats, onUpdate, onFile, onRemove }: SizeCardProps) {
+function SizeCard({ row, index, subCats, onUpdate, onAddFiles, onRemoveKept, onRemoveNew, onRemove }: SizeCardProps) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const totalImages = row.keptImages.length + row.newFiles.length;
 
   return (
     <div className="pf-size-card">
@@ -237,29 +269,6 @@ function SizeCard({ row, index, subCats, onUpdate, onFile, onRemove }: SizeCardP
       </div>
 
       <div className="pf-size-body">
-        {/* Image area */}
-        <div className="pf-size-img-area" onClick={() => fileRef.current?.click()}>
-          {row.previewUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={row.previewUrl} alt="معاينة" className="pf-size-preview" />
-          ) : (
-            <div className="pf-size-img-placeholder">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" />
-                <polyline points="21 15 16 10 5 21" />
-              </svg>
-              <span>اضغط لرفع صورة</span>
-            </div>
-          )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            style={{ display: "none" }}
-            onChange={(e) => onFile(e.target.files?.[0] ?? null)}
-          />
-        </div>
-
         {/* Fields */}
         <div className="pf-size-fields">
           {subCats.length > 0 && (
@@ -275,6 +284,46 @@ function SizeCard({ row, index, subCats, onUpdate, onFile, onRemove }: SizeCardP
             <label className="pf-label-sm">الحجم / الوزن <span className="pf-req">*</span></label>
             <input className="pf-input pf-input-sm" value={row.label} onChange={(e) => onUpdate({ label: e.target.value })} placeholder="مثال: 500g أو 1kg" dir="ltr" required />
           </div>
+        </div>
+
+        {/* Image grid */}
+        <div className="pf-imgs-grid">
+          {/* Kept images */}
+          {row.keptImages.map((img, ki) => (
+            <div key={img.url} className="pf-img-thumb">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={img.url} alt="" />
+              <button type="button" className="pf-img-remove" onClick={() => onRemoveKept(ki)}>×</button>
+            </div>
+          ))}
+          {/* New pending files */}
+          {row.newFiles.map((pf, fi) => (
+            <div key={pf.previewUrl} className="pf-img-thumb pf-img-thumb-new">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={pf.previewUrl} alt="" />
+              <button type="button" className="pf-img-remove" onClick={() => onRemoveNew(fi)}>×</button>
+            </div>
+          ))}
+          {/* Add button */}
+          <button
+            type="button"
+            className="pf-img-add"
+            onClick={() => fileRef.current?.click()}
+            title={`إضافة صور (${totalImages} حالياً)`}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            <span>إضافة صور</span>
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            style={{ display: "none" }}
+            onChange={(e) => onAddFiles(e.target.files)}
+          />
         </div>
       </div>
     </div>

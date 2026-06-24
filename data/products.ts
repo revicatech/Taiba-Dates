@@ -5,11 +5,11 @@ import mongoose from "mongoose";
 export type SubCategory = { _id: string; nameAR: string; nameEN: string };
 export type Category = { _id: string; nameEN: string; nameAR: string; subCategories?: SubCategory[] };
 
+export type ProductSizeImage = { url: string; publicId: string };
 export type ProductSize = {
   subCategoryId: string;
   label: string;
-  imageUrl: string;
-  imagePublicId: string;
+  images: ProductSizeImage[];
 };
 
 export type Product = {
@@ -24,33 +24,43 @@ export type Product = {
   sizes: ProductSize[];
 };
 
+function mapSize(s: Record<string, unknown>): ProductSize {
+  // New format: images[]
+  const newImages = s.images as { url: string; publicId: string }[] | undefined;
+  if (newImages && newImages.length > 0) {
+    return {
+      subCategoryId: (s.subCategoryId as string) ?? "",
+      label: (s.label as string) ?? "",
+      images: newImages.map((img) => ({ url: img.url, publicId: img.publicId ?? "" })),
+    };
+  }
+  // Legacy format: imageUrl / imagePublicId
+  if (s.imageUrl) {
+    return {
+      subCategoryId: (s.subCategoryId as string) ?? "",
+      label: (s.label as string) ?? "",
+      images: [{ url: s.imageUrl as string, publicId: (s.imagePublicId as string) ?? "" }],
+    };
+  }
+  return { subCategoryId: (s.subCategoryId as string) ?? "", label: (s.label as string) ?? "", images: [] };
+}
+
 function mapProduct(d: Record<string, unknown>): Product {
   const cat = d.category as Record<string, unknown> | null | undefined;
-
-  // Handle legacy documents that used old field names
   const nameAR = (d.nameAR as string) || (d.name as string) || "";
 
-  const rawSizes = d.sizes as ProductSize[] | undefined;
   let sizes: ProductSize[];
+  const rawSizes = d.sizes as Record<string, unknown>[] | undefined;
   if (rawSizes && rawSizes.length > 0) {
-    sizes = rawSizes.map((s) => ({
-      subCategoryId: s.subCategoryId ?? "",
-      label: s.label,
-      imageUrl: s.imageUrl,
-      imagePublicId: s.imagePublicId ?? "",
-    }));
+    sizes = rawSizes.map(mapSize);
   } else if (d.imageUrl) {
-    // Legacy: single imageUrl + optional weights array
+    // Legacy top-level imageUrl
     const weights = (d.weights as string[]) ?? [];
+    const img = { url: d.imageUrl as string, publicId: (d.imagePublicId as string) ?? "" };
     if (weights.length > 0) {
-      sizes = weights.map((w) => ({
-        subCategoryId: "",
-        label: w,
-        imageUrl: d.imageUrl as string,
-        imagePublicId: (d.imagePublicId as string) ?? "",
-      }));
+      sizes = weights.map((w) => ({ subCategoryId: "", label: w, images: [img] }));
     } else {
-      sizes = [{ subCategoryId: "", label: "—", imageUrl: d.imageUrl as string, imagePublicId: (d.imagePublicId as string) ?? "" }];
+      sizes = [{ subCategoryId: "", label: "—", images: [img] }];
     }
   } else {
     sizes = [];

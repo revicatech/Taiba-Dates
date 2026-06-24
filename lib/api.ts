@@ -44,11 +44,11 @@ export type Category = {
   subCategories: SubCategory[];  // populated on GET, may be [] if not fetched
 };
 
+export type ProductSizeImage = { url: string; publicId: string };
 export type ProductSize = {
   subCategoryId: string;
   label: string;
-  imageUrl: string;
-  imagePublicId: string;
+  images: ProductSizeImage[];
 };
 
 export type Product = {

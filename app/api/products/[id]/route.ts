@@ -58,18 +58,32 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
 
     if (sizesRaw !== null) {
       await connectDB();
-      const sizesData: { subCategoryId?: string; label: string; imageUrl?: string; imagePublicId?: string }[] = JSON.parse(sizesRaw);
+      // sizes JSON carries kept (already-uploaded) images per size
+      const sizesData: { subCategoryId?: string; label: string; images?: { url: string; publicId: string }[] }[] = JSON.parse(sizesRaw);
       const processedSizes = [];
-      for (let i = 0; i < sizesData.length; i++) {
-        const file = formData.get(`image_${i}`) as File | null;
-        if (file && file.size > 0) {
+
+      for (let si = 0; si < sizesData.length; si++) {
+        // Start with kept images from the form JSON
+        const kept = (sizesData[si].images ?? []).filter((img) => img.url);
+        // Upload any new files: image_{si}_0, image_{si}_1, ...
+        const newImages: { url: string; publicId: string }[] = [];
+        let imgIdx = 0;
+        while (true) {
+          const file = formData.get(`image_${si}_${imgIdx}`) as File | null;
+          if (!file || file.size === 0) break;
           const { url, publicId } = await uploadToCloudinary(file);
-          processedSizes.push({ subCategoryId: sizesData[i].subCategoryId ?? "", label: sizesData[i].label, imageUrl: url, imagePublicId: publicId });
-        } else if (sizesData[i].imageUrl) {
-          processedSizes.push({ subCategoryId: sizesData[i].subCategoryId ?? "", label: sizesData[i].label, imageUrl: sizesData[i].imageUrl!, imagePublicId: sizesData[i].imagePublicId! });
-        } else {
-          return NextResponse.json({ message: `صورة مطلوبة للحجم: ${sizesData[i].label}` }, { status: 400 });
+          newImages.push({ url, publicId });
+          imgIdx++;
         }
+        const allImages = [...kept, ...newImages];
+        if (allImages.length === 0) {
+          return NextResponse.json({ message: `صورة واحدة على الأقل مطلوبة للحجم: ${sizesData[si].label}` }, { status: 400 });
+        }
+        processedSizes.push({
+          subCategoryId: sizesData[si].subCategoryId ?? "",
+          label: sizesData[si].label,
+          images: allImages,
+        });
       }
       update.sizes = processedSizes;
     }

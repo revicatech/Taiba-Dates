@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import type { ProductSize, SubCategory } from "@/data/products";
 
 const FEATURE_ICONS: Record<string, string> = {
@@ -13,6 +13,7 @@ const FEATURE_ICONS: Record<string, string> = {
 };
 
 const WA_NUMBER = "96176993533";
+const SLIDE_INTERVAL = 3000;
 
 type Props = {
   nameAR: string;
@@ -33,37 +34,65 @@ export default function ProductDetailClient({
   const hasSubCats = usedSubIds.some((id) => id !== "");
 
   const [activeSub, setActiveSub] = useState(usedSubIds[0] ?? "");
-  const [activeSize, setActiveSize] = useState<ProductSize | null>(null);
-  const sliderRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const slideIdxRef = useRef(0);
+  const [activeSize, setActiveSize] = useState<ProductSize | null>(sizes[0] ?? null);
+  const [slideIdx, setSlideIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const touchStartX = useRef<number | null>(null);
 
   const visibleSizes = sizes.filter((s) => (s.subCategoryId || "") === activeSub);
+  const currentImages = activeSize?.images ?? [];
 
-  // Always auto-slide through visible sizes
+  const goTo = useCallback((idx: number) => {
+    setSlideIdx(idx);
+  }, []);
+
+  const goNext = useCallback(() => {
+    if (currentImages.length < 2) return;
+    setSlideIdx((i) => (i + 1) % currentImages.length);
+  }, [currentImages.length]);
+
+  const goPrev = useCallback(() => {
+    if (currentImages.length < 2) return;
+    setSlideIdx((i) => (i - 1 + currentImages.length) % currentImages.length);
+  }, [currentImages.length]);
+
+  // Reset slider when active size changes
   useEffect(() => {
-    slideIdxRef.current = 0;
+    setSlideIdx(0);
+  }, [activeSize]);
+
+  // Auto-slide
+  useEffect(() => {
+    if (paused || currentImages.length < 2) return;
+    intervalRef.current = setInterval(goNext, SLIDE_INTERVAL);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [paused, currentImages.length, goNext]);
+
+  // When sub changes: pick first visible size
+  useEffect(() => {
     setActiveSize(visibleSizes[0] ?? null);
-
-    if (visibleSizes.length < 2) return;
-
-    if (sliderRef.current) clearInterval(sliderRef.current);
-    sliderRef.current = setInterval(() => {
-      slideIdxRef.current = (slideIdxRef.current + 1) % visibleSizes.length;
-      setActiveSize(visibleSizes[slideIdxRef.current]);
-    }, 3000);
-    return () => { if (sliderRef.current) clearInterval(sliderRef.current); };
+    setSlideIdx(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSub, visibleSizes.length]);
+  }, [activeSub]);
 
-  // Clicking a size: jump to it and sync the slider index, but keep it running
+  function pickSub(id: string) { setActiveSub(id); }
+
   function pickSize(s: ProductSize) {
-    const idx = visibleSizes.findIndex((v) => v.label === s.label);
-    if (idx >= 0) slideIdxRef.current = idx;
     setActiveSize(s);
+    setSlideIdx(0);
   }
 
-  function pickSub(id: string) {
-    setActiveSub(id);
+  // Touch swipe
+  function onTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+  }
+  function onTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) diff > 0 ? goNext() : goPrev();
+    touchStartX.current = null;
   }
 
   function buildWA() {
@@ -76,39 +105,47 @@ export default function ProductDetailClient({
     return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
   }
 
-  const currentImage = activeSize?.imageUrl ?? visibleSizes[0]?.imageUrl ?? "";
+  const currentImage = currentImages[slideIdx]?.url ?? "";
   const categoryLabel = categoryNameAR || categoryNameEN;
 
   return (
     <div className="pdv2-grid">
 
-      {/* ── RIGHT: Image ── */}
+      {/* ── RIGHT: Image Slider ── */}
       <div className="pdv2-img-col">
-        <div className="pdv2-img-card">
+        <div
+          className="pdv2-img-card"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
           {currentImage
-            // eslint-disable-next-line @next/next/no-img-element
-            ? <img src={currentImage} alt={nameAR} className="pdv2-img" />
+            ? (
+              // key forces remount → triggers fade-in animation on every slide change
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={`${activeSize?.label}-${slideIdx}`} src={currentImage} alt={nameAR} className="pdv2-img" />
+            )
             : <div className="pdv2-img-empty" />
           }
-          {categoryLabel && (
-            <span className="pdv2-badge">{categoryLabel}</span>
-          )}
-          {/* Thumbnail strip */}
-          {visibleSizes.length > 1 && (
-            <div className="pdv2-thumbs">
-              {visibleSizes.map((s) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={s.label}
-                  src={s.imageUrl}
-                  alt={s.label}
-                  className={`pdv2-thumb${activeSize?.label === s.label ? " pdv2-thumb-active" : ""}`}
-                  onClick={() => pickSize(s)}
-                />
-              ))}
-            </div>
-          )}
+
+          {categoryLabel && <span className="pdv2-badge">{categoryLabel}</span>}
         </div>
+
+        {/* Line indicators */}
+        {currentImages.length > 1 && (
+          <div className="pdv2-indicators">
+            {currentImages.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                className={`pdv2-indicator${i === slideIdx ? " pdv2-indicator-active" : ""}`}
+                onClick={() => goTo(i)}
+                aria-label={`صورة ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── LEFT: Info ── */}

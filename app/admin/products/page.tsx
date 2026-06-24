@@ -81,7 +81,7 @@ export default function ProductsPage() {
             </thead>
             <tbody>
               {products.map((p) => {
-                const cover = p.sizes[0]?.imageUrl ?? "";
+                const cover = p.sizes[0]?.images[0]?.url ?? "";
                 const canFeature = p.featured || featuredCount < MAX_FEATURED;
                 const isToggling = togglingId === p._id;
                 return (
