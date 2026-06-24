@@ -26,16 +26,46 @@ export type Product = {
 
 function mapProduct(d: Record<string, unknown>): Product {
   const cat = d.category as Record<string, unknown> | null | undefined;
+
+  // Handle legacy documents that used old field names
+  const nameAR = (d.nameAR as string) || (d.name as string) || "";
+
+  const rawSizes = d.sizes as ProductSize[] | undefined;
+  let sizes: ProductSize[];
+  if (rawSizes && rawSizes.length > 0) {
+    sizes = rawSizes.map((s) => ({
+      subCategoryId: s.subCategoryId ?? "",
+      label: s.label,
+      imageUrl: s.imageUrl,
+      imagePublicId: s.imagePublicId ?? "",
+    }));
+  } else if (d.imageUrl) {
+    // Legacy: single imageUrl + optional weights array
+    const weights = (d.weights as string[]) ?? [];
+    if (weights.length > 0) {
+      sizes = weights.map((w) => ({
+        subCategoryId: "",
+        label: w,
+        imageUrl: d.imageUrl as string,
+        imagePublicId: (d.imagePublicId as string) ?? "",
+      }));
+    } else {
+      sizes = [{ subCategoryId: "", label: "—", imageUrl: d.imageUrl as string, imagePublicId: (d.imagePublicId as string) ?? "" }];
+    }
+  } else {
+    sizes = [];
+  }
+
   return {
     _id: String(d._id),
-    nameAR: (d.nameAR as string) || "",
+    nameAR,
     nameEN: (d.nameEN as string) || "",
     description: (d.description as string) ?? "",
     fullDescription: (d.fullDescription as string) ?? "",
     category: cat ? {
       _id: String(cat._id),
-      nameEN: cat.nameEN as string,
-      nameAR: cat.nameAR as string,
+      nameEN: (cat.nameEN as string) ?? "",
+      nameAR: (cat.nameAR as string) ?? "",
       subCategories: ((cat.subCategories as SubCategory[]) ?? []).map((s) => ({
         _id: String(s._id),
         nameAR: s.nameAR,
@@ -44,12 +74,7 @@ function mapProduct(d: Record<string, unknown>): Product {
     } : null,
     featured: Boolean(d.featured),
     features: (d.features as string[]) ?? [],
-    sizes: ((d.sizes as ProductSize[]) ?? []).map((s) => ({
-      subCategoryId: s.subCategoryId ?? "",
-      label: s.label,
-      imageUrl: s.imageUrl,
-      imagePublicId: s.imagePublicId,
-    })),
+    sizes,
   };
 }
 
