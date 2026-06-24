@@ -1205,3 +1205,47 @@
   transition: border-color 200ms, background 200ms;
 }
 .pf-btn-secondary:hover { border-color: var(--color-primary); background: rgba(244,175,46,0.06); }
+
+/* Featured counter bar */
+.admin-featured-counter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: var(--admin-bg);
+  border-bottom: 1px solid var(--admin-border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+.admin-featured-full { color: #E0A52E; }
+.admin-featured-limit-note {
+  font-size: 12px;
+  font-weight: 400;
+  color: #c0763a;
+}
+
+/* Star toggle button */
+.admin-star-btn {
+  background: none;
+  border: 1.5px solid var(--admin-border);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: background 150ms, border-color 150ms, opacity 150ms;
+  opacity: 0.35;
+}
+.admin-star-btn:hover:not(:disabled) {
+  background: #fff8e7;
+  border-color: #E0A52E;
+  opacity: 1;
+}
+.admin-star-on {
+  opacity: 1;
+  background: #fff8e7;
+  border-color: #E0A52E;
+}
+.admin-star-disabled { cursor: not-allowed; }

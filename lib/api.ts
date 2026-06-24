@@ -98,4 +98,6 @@ export const productsApi = {
   create: (form: FormData) => formRequest<Product>("/api/products", "POST", form),
   update: (id: string, form: FormData) => formRequest<Product>(`/api/products/${id}`, "PUT", form),
   remove: (id: string) => jsonRequest<void>(`/api/products/${id}`, "DELETE"),
+  toggleFeatured: (id: string, featured: boolean) =>
+    jsonRequest<{ featured: boolean }>(`/api/products/${id}`, "PATCH", { featured }),
 };

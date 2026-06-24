@@ -57,6 +57,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     if (!categoryExists) {
       return NextResponse.json({ message: "Referenced category does not exist" }, { status: 400 });
     }
+    if (featured) {
+      const featuredCount = await Product.countDocuments({ featured: true });
+      if (featuredCount >= 3) {
+        return NextResponse.json({ message: "الحد الأقصى 3 منتجات مميزة على الصفحة الرئيسية" }, { status: 400 });
+      }
+    }
 
     const sizesData: { subCategoryId?: string; label: string }[] = JSON.parse(sizesRaw);
     const features: string[] = JSON.parse(featuresRaw);

@@ -5,9 +5,12 @@ import Link from "next/link";
 import AdminShell from "@/components/admin/AdminShell";
 import { ApiError, productsApi, type Product } from "@/lib/api";
 
+const MAX_FEATURED = 3;
+
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   async function refresh() {
     try { setProducts((await productsApi.list({ limit: 100 })).items); }
@@ -22,6 +25,20 @@ export default function ProductsPage() {
     catch (err) { alert(err instanceof ApiError ? err.message : "فشل الحذف"); }
   }
 
+  async function onToggleFeatured(p: Product) {
+    setTogglingId(p._id);
+    try {
+      await productsApi.toggleFeatured(p._id, !p.featured);
+      await refresh();
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : "فشل التحديث");
+    } finally {
+      setTogglingId(null);
+    }
+  }
+
+  const featuredCount = products?.filter((p) => p.featured).length ?? 0;
+
   return (
     <AdminShell>
       <div className="admin-page-header">
@@ -31,6 +48,17 @@ export default function ProductsPage() {
         </div>
         <Link href="/admin/products/new" className="admin-btn admin-btn-primary">+ منتج جديد</Link>
       </div>
+
+      {products !== null && (
+        <div className="admin-featured-counter">
+          <span className={featuredCount >= MAX_FEATURED ? "admin-featured-full" : ""}>
+            ⭐ مميز: {featuredCount} / {MAX_FEATURED}
+          </span>
+          {featuredCount >= MAX_FEATURED && (
+            <span className="admin-featured-limit-note">الحد الأقصى — أزل تمييز منتج لتمييز آخر</span>
+          )}
+        </div>
+      )}
 
       <div className="admin-table-wrap">
         {error ? (
@@ -47,13 +75,15 @@ export default function ProductsPage() {
                 <th>الاسم</th>
                 <th>الفئة</th>
                 <th>الأحجام</th>
-                <th style={{ width: 60 }}>مميز</th>
+                <th style={{ width: 80, textAlign: "center" }}>مميز</th>
                 <th style={{ width: 160 }}></th>
               </tr>
             </thead>
             <tbody>
               {products.map((p) => {
                 const cover = p.sizes[0]?.imageUrl ?? "";
+                const canFeature = p.featured || featuredCount < MAX_FEATURED;
+                const isToggling = togglingId === p._id;
                 return (
                   <tr key={p._id}>
                     <td>
@@ -73,7 +103,20 @@ export default function ProductsPage() {
                         {p.sizes.length > 4 && <span className="cat-sub-chip">+{p.sizes.length - 4}</span>}
                       </div>
                     </td>
-                    <td style={{ textAlign: "center" }}>{p.featured ? "⭐" : "—"}</td>
+                    <td style={{ textAlign: "center" }}>
+                      <button
+                        className={`admin-star-btn${p.featured ? " admin-star-on" : ""}${!canFeature ? " admin-star-disabled" : ""}`}
+                        onClick={() => onToggleFeatured(p)}
+                        disabled={isToggling || !canFeature}
+                        title={
+                          p.featured ? "إلغاء التمييز"
+                          : !canFeature ? "الحد الأقصى 3 منتجات مميزة"
+                          : "تمييز على الصفحة الرئيسية"
+                        }
+                      >
+                        {isToggling ? "…" : "⭐"}
+                      </button>
+                    </td>
                     <td>
                       <div className="admin-table-actions">
                         <Link href={`/admin/products/${p._id}`} className="admin-btn admin-btn-secondary admin-btn-sm">تعديل</Link>

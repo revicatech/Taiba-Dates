@@ -83,6 +83,26 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
   }
 }
 
+export async function PATCH(req: NextRequest, { params }: Ctx): Promise<NextResponse> {
+  try {
+    const { id } = await params;
+    await requireAdmin();
+    const { featured } = await req.json() as { featured: boolean };
+    await connectDB();
+    if (featured === true) {
+      const count = await Product.countDocuments({ featured: true, _id: { $ne: id } });
+      if (count >= 3) {
+        return NextResponse.json({ message: "الحد الأقصى 3 منتجات مميزة على الصفحة الرئيسية" }, { status: 400 });
+      }
+    }
+    const product = await Product.findByIdAndUpdate(id, { featured }, { new: true });
+    if (!product) return NextResponse.json({ message: "Product not found" }, { status: 404 });
+    return NextResponse.json({ featured: product.featured });
+  } catch (err) {
+    return handleApiError(err);
+  }
+}
+
 export async function DELETE(_req: NextRequest, { params }: Ctx): Promise<NextResponse> {
   try {
     const { id } = await params;
