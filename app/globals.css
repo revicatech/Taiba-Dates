@@ -2171,21 +2171,9 @@ footer {
   margin-top: -12px;
 }
 
-/* Mobile sticky WhatsApp */
+/* Mobile: WhatsApp button stays inline, no sticky */
 @media (max-width: 768px) {
-  .pdv2-wa-btn {
-    position: fixed;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    border-radius: 0;
-    z-index: 90;
-    padding: 18px 24px;
-    padding-bottom: calc(18px + env(safe-area-inset-bottom));
-    box-shadow: 0 -4px 20px rgba(37, 211, 102, 0.25);
-  }
   .pdv2-trust { display: none; }
-  .pdv2-page { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
 }
 
 /* ── Slider: fade animation ── */
