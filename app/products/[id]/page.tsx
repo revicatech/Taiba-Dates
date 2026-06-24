@@ -56,9 +56,7 @@ export default async function ProductDetailPage({ params }: Props) {
               {product.description && (
                 <p className="product-detail-short-desc">{product.description}</p>
               )}
-              {product.fullDescription && (
-                <div className="product-detail-full-desc"><p>{product.fullDescription}</p></div>
-              )}
+
 
               {product.features.length > 0 && (
                 <ul className="product-detail-features">
