@@ -28,13 +28,25 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
     const formData = await req.formData();
     const update: Record<string, unknown> = {};
 
-    const name = formData.get("name") as string | null;
+    const nameAR = formData.get("nameAR") as string | null;
+    const nameEN = formData.get("nameEN") as string | null;
+    const slug = formData.get("slug") as string | null;
     const description = formData.get("description") as string | null;
+    const fullDescription = formData.get("fullDescription") as string | null;
     const category = formData.get("category") as string | null;
+    const featured = formData.get("featured");
+    const weightsRaw = formData.get("weights") as string | null;
+    const featuresRaw = formData.get("features") as string | null;
     const imageFile = formData.get("image") as File | null;
 
-    if (name !== null) update.name = name;
+    if (nameAR !== null) update.nameAR = nameAR;
+    if (nameEN !== null) update.nameEN = nameEN;
+    if (slug !== null) update.slug = slug;
     if (description !== null) update.description = description;
+    if (fullDescription !== null) update.fullDescription = fullDescription;
+    if (featured !== null) update.featured = featured === "true";
+    if (weightsRaw !== null) update.weights = JSON.parse(weightsRaw);
+    if (featuresRaw !== null) update.features = JSON.parse(featuresRaw);
 
     if (category !== null) {
       if (!mongoose.Types.ObjectId.isValid(category)) {

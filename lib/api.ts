@@ -48,11 +48,17 @@ export type Admin = { _id: string; username: string };
 export type Category = { _id: string; nameEN: string; nameAR: string };
 export type Product = {
   _id: string;
-  name: string;
+  nameAR: string;
+  nameEN: string;
+  slug: string;
   description: string;
+  fullDescription: string;
   category: Category;
+  featured: boolean;
   imageUrl: string;
   imagePublicId: string;
+  weights: string[];
+  features: string[];
 };
 export type Paginated<T> = {
   items: T[];

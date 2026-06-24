@@ -41,13 +41,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     await requireAdmin();
     const formData = await req.formData();
-    const name = formData.get("name") as string | null;
+
+    const nameAR = formData.get("nameAR") as string | null;
+    const nameEN = (formData.get("nameEN") as string | null) ?? "";
+    const slug = formData.get("slug") as string | null;
     const category = formData.get("category") as string | null;
     const description = (formData.get("description") as string | null) ?? "";
+    const fullDescription = (formData.get("fullDescription") as string | null) ?? "";
+    const featured = formData.get("featured") === "true";
+    const weightsRaw = formData.get("weights") as string | null;
+    const featuresRaw = formData.get("features") as string | null;
     const imageFile = formData.get("image") as File | null;
 
-    if (!name || !category) {
-      return NextResponse.json({ message: "name and category are required" }, { status: 400 });
+    if (!nameAR || !slug || !category) {
+      return NextResponse.json({ message: "nameAR, slug and category are required" }, { status: 400 });
     }
     if (!mongoose.Types.ObjectId.isValid(category)) {
       return NextResponse.json({ message: "Invalid category id" }, { status: 400 });
@@ -59,6 +66,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
+    const weights: string[] = weightsRaw ? JSON.parse(weightsRaw) : [];
+    const features: string[] = featuresRaw ? JSON.parse(featuresRaw) : [];
+
     await connectDB();
     const categoryExists = await Category.exists({ _id: category });
     if (!categoryExists) {
@@ -67,9 +77,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const { url, publicId } = await uploadToCloudinary(imageFile);
     const product = await Product.create({
-      name,
+      nameAR,
+      nameEN,
+      slug,
       category,
       description,
+      fullDescription,
+      featured,
+      weights,
+      features,
       imageUrl: url,
       imagePublicId: publicId,
     });

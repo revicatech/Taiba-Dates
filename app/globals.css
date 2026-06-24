@@ -1604,3 +1604,213 @@ footer {
 }
 .scroll-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
 .scroll-top:hover { background: var(--color-primary-dark); }
+
+/* ============ WEIGHT PILLS (product cards) ============ */
+.product-weights {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 4px;
+}
+.weights-label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+.weight-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(244, 175, 46, 0.4);
+  font-size: 12px;
+  font-family: var(--font-latin-body);
+  color: var(--color-text-secondary);
+  background: transparent;
+}
+
+/* ============ PRODUCT DETAIL PAGE ============ */
+.product-detail-page {
+  padding-top: calc(var(--nav-height) + 40px);
+  padding-bottom: 100px;
+  background: var(--color-bg);
+  min-height: 100vh;
+}
+
+.product-detail-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin-bottom: 40px;
+}
+.product-detail-breadcrumb a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color var(--duration-fast);
+}
+.product-detail-breadcrumb a:hover { color: var(--color-primary); }
+.product-detail-breadcrumb span { color: var(--color-text-muted); }
+
+.product-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: start;
+}
+@media (max-width: 768px) {
+  .product-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+}
+
+.product-detail-image-wrap {
+  position: sticky;
+  top: calc(var(--nav-height) + 24px);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--color-bg-section);
+  box-shadow: var(--shadow-lg);
+}
+.product-detail-image {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  display: block;
+}
+@media (max-width: 768px) {
+  .product-detail-image-wrap { position: static; }
+}
+
+.product-detail-category {
+  display: inline-block;
+  font-family: var(--font-latin-body);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 16px;
+}
+
+.product-detail-name-ar {
+  font-family: var(--font-arabic);
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+.product-detail-name-en {
+  font-family: var(--font-latin-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.product-detail-short-desc {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--color-text-secondary);
+  margin-bottom: 16px;
+  border-right: 3px solid var(--color-primary);
+  padding-right: 16px;
+}
+.product-detail-full-desc {
+  font-size: 15px;
+  line-height: 1.9;
+  color: var(--color-text-secondary);
+  margin-bottom: 28px;
+}
+
+.product-detail-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 32px;
+  padding: 20px;
+  background: var(--color-bg-section);
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+}
+.product-detail-features li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+.feature-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* ============ WEIGHT SELECTOR + WHATSAPP ============ */
+.product-detail-order {
+  margin-top: 8px;
+}
+.product-detail-weights-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 12px;
+}
+.product-detail-weights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+.weight-chip {
+  padding: 10px 20px;
+  border-radius: 4px;
+  border: 1.5px solid rgba(244, 175, 46, 0.4);
+  background: transparent;
+  font-family: var(--font-latin-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast),
+    background var(--duration-fast),
+    color var(--duration-fast),
+    box-shadow var(--duration-fast);
+}
+.weight-chip:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-alpha);
+}
+.weight-chip-active {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-dark);
+  box-shadow: var(--shadow-golden);
+}
+.product-detail-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 32px;
+  background: #25D366;
+  color: #fff;
+  font-family: var(--font-arabic);
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: background var(--duration-fast), box-shadow var(--duration-fast), transform var(--duration-fast);
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.35);
+}
+.product-detail-whatsapp:hover {
+  background: #1ebe5c;
+  box-shadow: 0 6px 24px rgba(37, 211, 102, 0.50);
+  transform: translateY(-1px);
+}

@@ -57,8 +57,8 @@ export default function ProductsPage() {
               <tr>
                 <th style={{ width: 80 }}>الصورة</th>
                 <th>الاسم</th>
-                <th>الوصف</th>
                 <th>الفئة</th>
+                <th style={{ width: 80 }}>مميز</th>
                 <th style={{ width: 160 }}></th>
               </tr>
             </thead>
@@ -67,17 +67,15 @@ export default function ProductsPage() {
                 <tr key={p._id}>
                   <td>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.imageUrl} alt={p.name} className="admin-table-thumb" />
+                    <img src={p.imageUrl} alt={p.nameAR} className="admin-table-thumb" />
                   </td>
                   <td>
-                    <div className="admin-table-name">{p.name}</div>
-                  </td>
-                  <td>
-                    <div style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--color-text-muted, #888)" }}>
-                      {p.description || "—"}
-                    </div>
+                    <div className="admin-table-name">{p.nameAR}</div>
+                    {p.nameEN && <div style={{ fontSize: 12, color: "var(--color-text-muted, #888)" }}>{p.nameEN}</div>}
+                    {p.slug && <div style={{ fontSize: 11, color: "var(--color-text-muted, #888)", fontFamily: "monospace" }}>/{p.slug}</div>}
                   </td>
                   <td>{p.category?.nameAR ?? "—"}</td>
+                  <td style={{ textAlign: "center" }}>{p.featured ? "⭐" : "—"}</td>
                   <td>
                     <div className="admin-table-actions">
                       <Link

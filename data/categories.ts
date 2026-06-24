@@ -2,6 +2,8 @@ import { connectDB } from "@/lib/db";
 import { Category as CategoryModel } from "@/lib/models/Category";
 import type { Category } from "./products";
 
+export type { Category };
+
 export async function fetchCategories(): Promise<Category[]> {
   try {
     await connectDB();
