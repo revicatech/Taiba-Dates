@@ -86,24 +86,24 @@ export default function ProductsPage() {
                 const isToggling = togglingId === p._id;
                 return (
                   <tr key={p._id}>
-                    <td>
+                    <td data-label="">
                       {cover && (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={cover} alt={p.nameAR} className="admin-table-thumb" />
                       )}
                     </td>
-                    <td>
+                    <td data-label="الاسم">
                       <div className="admin-table-name">{p.nameAR}</div>
                       {p.nameEN && <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{p.nameEN}</div>}
                     </td>
-                    <td>{p.category?.nameAR ?? "—"}</td>
-                    <td>
+                    <td data-label="الفئة">{p.category?.nameAR ?? "—"}</td>
+                    <td data-label="الأحجام">
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                         {p.sizes.slice(0, 4).map((s) => <span key={s.label} className="cat-sub-chip">{s.label}</span>)}
                         {p.sizes.length > 4 && <span className="cat-sub-chip">+{p.sizes.length - 4}</span>}
                       </div>
                     </td>
-                    <td style={{ textAlign: "center" }}>
+                    <td data-label="مميز" style={{ textAlign: "center" }}>
                       <button
                         className={`admin-star-btn${p.featured ? " admin-star-on" : ""}${!canFeature ? " admin-star-disabled" : ""}`}
                         onClick={() => onToggleFeatured(p)}
@@ -117,7 +117,7 @@ export default function ProductsPage() {
                         {isToggling ? "…" : "⭐"}
                       </button>
                     </td>
-                    <td>
+                    <td data-label="">
                       <div className="admin-table-actions">
                         <Link href={`/admin/products/${p._id}`} className="admin-btn admin-btn-secondary admin-btn-sm">تعديل</Link>
                         <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => onDelete(p._id)}>حذف</button>
