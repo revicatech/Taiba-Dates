@@ -30,25 +30,25 @@ export default function ProductDetailClient({
   nameAR, nameEN, description, categoryNameAR, categoryNameEN,
   features, sizes, subCategories,
 }: Props) {
-  const usedSubIds = [...new Set(sizes.map((s) => s.subCategoryId || ""))];
+  // All sizes become slides — one slide per size, always
+  const slides = sizes.map((s) => ({
+    size: s,
+    imageUrl: s.images[0]?.url ?? "",
+    subId: s.subCategoryId || "",
+  }));
+
+  const usedSubIds = [...new Set(slides.map((sl) => sl.subId))];
   const hasSubCats = usedSubIds.some((id) => id !== "");
 
-  const [activeSub, setActiveSub] = useState(usedSubIds[0] ?? "");
   const [slideIdx, setSlideIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const touchStartX = useRef<number | null>(null);
 
-  // Sizes visible for the active sub-category
-  const visibleSizes = sizes.filter((s) => (s.subCategoryId || "") === activeSub);
-
-  // Each slide = a size. The cover image for a slide = first image of that size.
-  const slides = visibleSizes.map((s) => ({
-    size: s,
-    imageUrl: s.images[0]?.url ?? "",
-  }));
-
-  const activeSize = slides[slideIdx]?.size ?? null;
+  // Derive active state from current slide — no separate state needed
+  const currentSlide = slides[slideIdx] ?? slides[0];
+  const activeSize = currentSlide?.size ?? null;
+  const activeSub = currentSlide?.subId ?? "";
 
   const goTo = useCallback((idx: number) => setSlideIdx(idx), []);
 
@@ -60,26 +60,25 @@ export default function ProductDetailClient({
     setSlideIdx((i) => (i - 1 + slides.length) % Math.max(slides.length, 1));
   }, [slides.length]);
 
-  // Auto-slide — always runs while not paused, regardless of how many slides there are
+  // Auto-slide always runs (2+ slides needed)
   useEffect(() => {
     if (paused || slides.length < 2) return;
     intervalRef.current = setInterval(goNext, SLIDE_INTERVAL);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [paused, slides.length, goNext]);
 
-  // When sub-category changes, reset to slide 0
-  useEffect(() => {
-    setSlideIdx(0);
-  }, [activeSub]);
-
-  // Clicking a size chip: jump to that slide
-  function pickSize(s: ProductSize) {
-    const idx = visibleSizes.findIndex((v) => v.label === s.label);
+  // Clicking a sub-category tab → jump to first slide of that group
+  function pickSub(subId: string) {
+    const idx = slides.findIndex((sl) => sl.subId === subId);
     if (idx >= 0) setSlideIdx(idx);
   }
 
-  function pickSub(id: string) {
-    setActiveSub(id);
+  // Clicking a size chip → jump to that slide
+  function pickSize(s: ProductSize) {
+    const idx = slides.findIndex(
+      (sl) => sl.size.label === s.label && sl.subId === (s.subCategoryId || "")
+    );
+    if (idx >= 0) setSlideIdx(idx);
   }
 
   // Touch swipe
@@ -103,8 +102,12 @@ export default function ProductDetailClient({
     return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
   }
 
-  const currentImageUrl = slides[slideIdx]?.imageUrl ?? "";
   const categoryLabel = categoryNameAR || categoryNameEN;
+
+  // Size chips: show all sizes for the current sub-category
+  const visibleSizes = hasSubCats
+    ? sizes.filter((s) => (s.subCategoryId || "") === activeSub)
+    : sizes;
 
   return (
     <div className="pdv2-grid">
@@ -118,18 +121,22 @@ export default function ProductDetailClient({
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
-          {currentImageUrl
+          {currentSlide?.imageUrl
             ? (
-              // key changes on every slide → remounts img → triggers fade-in CSS animation
               // eslint-disable-next-line @next/next/no-img-element
-              <img key={`${activeSub}-${slideIdx}`} src={currentImageUrl} alt={nameAR} className="pdv2-img" />
+              <img
+                key={slideIdx}
+                src={currentSlide.imageUrl}
+                alt={nameAR}
+                className="pdv2-img"
+              />
             )
             : <div className="pdv2-img-empty" />
           }
           {categoryLabel && <span className="pdv2-badge">{categoryLabel}</span>}
         </div>
 
-        {/* Indicator lines — one per size */}
+        {/* Indicator lines — one per size/slide, always visible */}
         {slides.length > 0 && (
           <div className="pdv2-indicators">
             {slides.map((_, i) => (
@@ -138,7 +145,7 @@ export default function ProductDetailClient({
                 type="button"
                 className={`pdv2-indicator${i === slideIdx ? " pdv2-indicator-active" : ""}`}
                 onClick={() => goTo(i)}
-                aria-label={`حجم ${i + 1}`}
+                aria-label={`صورة ${i + 1}`}
               />
             ))}
           </div>
@@ -191,7 +198,7 @@ export default function ProductDetailClient({
           </div>
         )}
 
-        {/* Size selector — active chip matches the current slide */}
+        {/* Size chips — shows sizes of the current sub-category, active = current slide */}
         {visibleSizes.length > 0 && (
           <div className="pdv2-sub-section">
             <p className="pdv2-selector-label">الحجم / الوزن:</p>
