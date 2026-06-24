@@ -34,54 +34,52 @@ export default function ProductDetailClient({
   const hasSubCats = usedSubIds.some((id) => id !== "");
 
   const [activeSub, setActiveSub] = useState(usedSubIds[0] ?? "");
-  const [activeSize, setActiveSize] = useState<ProductSize | null>(sizes[0] ?? null);
   const [slideIdx, setSlideIdx] = useState(0);
   const [paused, setPaused] = useState(false);
-
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const touchStartX = useRef<number | null>(null);
 
+  // Sizes visible for the active sub-category
   const visibleSizes = sizes.filter((s) => (s.subCategoryId || "") === activeSub);
-  const currentImages = activeSize?.images ?? [];
 
-  const goTo = useCallback((idx: number) => {
-    setSlideIdx(idx);
-  }, []);
+  // Each slide = a size. The cover image for a slide = first image of that size.
+  const slides = visibleSizes.map((s) => ({
+    size: s,
+    imageUrl: s.images[0]?.url ?? "",
+  }));
+
+  const activeSize = slides[slideIdx]?.size ?? null;
+
+  const goTo = useCallback((idx: number) => setSlideIdx(idx), []);
 
   const goNext = useCallback(() => {
-    if (currentImages.length < 2) return;
-    setSlideIdx((i) => (i + 1) % currentImages.length);
-  }, [currentImages.length]);
+    setSlideIdx((i) => (i + 1) % Math.max(slides.length, 1));
+  }, [slides.length]);
 
   const goPrev = useCallback(() => {
-    if (currentImages.length < 2) return;
-    setSlideIdx((i) => (i - 1 + currentImages.length) % currentImages.length);
-  }, [currentImages.length]);
+    setSlideIdx((i) => (i - 1 + slides.length) % Math.max(slides.length, 1));
+  }, [slides.length]);
 
-  // Reset slider when active size changes
+  // Auto-slide — always runs while not paused, regardless of how many slides there are
   useEffect(() => {
-    setSlideIdx(0);
-  }, [activeSize]);
-
-  // Auto-slide
-  useEffect(() => {
-    if (paused || currentImages.length < 2) return;
+    if (paused || slides.length < 2) return;
     intervalRef.current = setInterval(goNext, SLIDE_INTERVAL);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [paused, currentImages.length, goNext]);
+  }, [paused, slides.length, goNext]);
 
-  // When sub changes: pick first visible size
+  // When sub-category changes, reset to slide 0
   useEffect(() => {
-    setActiveSize(visibleSizes[0] ?? null);
     setSlideIdx(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeSub]);
 
-  function pickSub(id: string) { setActiveSub(id); }
-
+  // Clicking a size chip: jump to that slide
   function pickSize(s: ProductSize) {
-    setActiveSize(s);
-    setSlideIdx(0);
+    const idx = visibleSizes.findIndex((v) => v.label === s.label);
+    if (idx >= 0) setSlideIdx(idx);
+  }
+
+  function pickSub(id: string) {
+    setActiveSub(id);
   }
 
   // Touch swipe
@@ -105,7 +103,7 @@ export default function ProductDetailClient({
     return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
   }
 
-  const currentImage = currentImages[slideIdx]?.url ?? "";
+  const currentImageUrl = slides[slideIdx]?.imageUrl ?? "";
   const categoryLabel = categoryNameAR || categoryNameEN;
 
   return (
@@ -120,28 +118,27 @@ export default function ProductDetailClient({
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
-          {currentImage
+          {currentImageUrl
             ? (
-              // key forces remount → triggers fade-in animation on every slide change
+              // key changes on every slide → remounts img → triggers fade-in CSS animation
               // eslint-disable-next-line @next/next/no-img-element
-              <img key={`${activeSize?.label}-${slideIdx}`} src={currentImage} alt={nameAR} className="pdv2-img" />
+              <img key={`${activeSub}-${slideIdx}`} src={currentImageUrl} alt={nameAR} className="pdv2-img" />
             )
             : <div className="pdv2-img-empty" />
           }
-
           {categoryLabel && <span className="pdv2-badge">{categoryLabel}</span>}
         </div>
 
-        {/* Line indicators */}
-        {currentImages.length > 1 && (
+        {/* Indicator lines — one per size */}
+        {slides.length > 0 && (
           <div className="pdv2-indicators">
-            {currentImages.map((_, i) => (
+            {slides.map((_, i) => (
               <button
                 key={i}
                 type="button"
                 className={`pdv2-indicator${i === slideIdx ? " pdv2-indicator-active" : ""}`}
                 onClick={() => goTo(i)}
-                aria-label={`صورة ${i + 1}`}
+                aria-label={`حجم ${i + 1}`}
               />
             ))}
           </div>
@@ -194,7 +191,7 @@ export default function ProductDetailClient({
           </div>
         )}
 
-        {/* Size selector */}
+        {/* Size selector — active chip matches the current slide */}
         {visibleSizes.length > 0 && (
           <div className="pdv2-sub-section">
             <p className="pdv2-selector-label">الحجم / الوزن:</p>
