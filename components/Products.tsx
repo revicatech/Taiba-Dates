@@ -2,11 +2,7 @@ import RevealOnScroll from "@/components/RevealOnScroll";
 import { fetchProducts } from "@/data/products";
 
 export default async function Products() {
-  // Try featured first; fall back to latest 3 if none are marked featured
-  let products = await fetchProducts({ limit: 3, featuredOnly: true });
-  if (products.length === 0) {
-    products = await fetchProducts({ limit: 3 });
-  }
+  const products = await fetchProducts({ limit: 3, featuredOnly: true });
 
   return (
     <section className="products" id="products">
