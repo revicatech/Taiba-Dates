@@ -1,7 +1,9 @@
+import { unstable_noStore as noStore } from "next/cache";
 import RevealOnScroll from "@/components/RevealOnScroll";
 import { fetchProducts } from "@/data/products";
 
 export default async function Products() {
+  noStore();
   const products = await fetchProducts({ limit: 3, featuredOnly: true });
 
   return (
