@@ -46,7 +46,7 @@ export default function Footer() {
         <div className="footer-col">
           <h4>خدماتنا</h4>
           <ul>
-            <li><a href="#">الطلبيات المؤسسية</a></li>
+            <li><a href="#"></a></li>
             <li><a href="#">هدايا الشركات</a></li>
             <li><a href="#">التغليف المخصص</a></li>
             <li><a href="#">الشحن الدولي</a></li>
