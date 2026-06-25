@@ -63,7 +63,7 @@ export default function CtaBanner() {
               <div>
                 <p className="contact-card-label">الموقع</p>
                 <p className="contact-card-value">البقاع الأوسط، تعناييل</p>
-                <p className="contact-card-note">خلف كسكادة مول</p>
+                <p className="contact-card-note">خلف كسكادا مول</p>
               </div>
             </div>
 
