@@ -36,21 +36,21 @@ export default function Footer() {
         <div className="footer-col">
           <h4>منتجاتنا</h4>
           <ul>
-            <li><a href="https://taiba-dates.vercel.app/products?category=6a3bc3e24988c490c8f6391d">تمر مدجول اردني</a></li>
-            <li><a href="">تمر الصقعي</a></li>
-            <li><a href="">تمر الصفاوي</a></li>
-            <li><a href="">تمر خضري</a></li>
+            <li><a>تمر مدجول اردني</a></li>
+            <li><a>تمر الصقعي</a></li>
+            <li><a>تمر الصفاوي</a></li>
+            <li><a>تمر خضري</a></li>
           </ul>
         </div>
 
         <div className="footer-col">
           <h4>خدماتنا</h4>
           <ul>
-            <li><a href="">أجود أنواع التمور</a></li>
-            <li><a href="">تغليف فاخر</a></li>
-            <li><a href="">جودة مضمونة</a></li>
-            <li><a href="">خدمة عملاء مميزة</a></li>
-            <li><a href="">توصيل سريع</a></li>
+            <li><a>أجود أنواع التمور</a></li>
+            <li><a>تغليف فاخر</a></li>
+            <li><a>جودة مضمونة</a></li>
+            <li><a>خدمة عملاء مميزة</a></li>
+            <li><a>توصيل سريع</a></li>
           </ul>
         </div>
 
