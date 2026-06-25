@@ -36,7 +36,7 @@ export default function Footer() {
         <div className="footer-col">
           <h4>منتجاتنا</h4>
           <ul>
-            <li><a href="">تمر مدجول اردني</a></li>
+            <li><a href="/products?category=6a3bc3e24988c490c8f6391d">تمر مدجول اردني</a></li>
             <li><a href="">تمر الصقعي</a></li>
             <li><a href="">تمر الصفاوي</a></li>
             <li><a href="">تمر خضري</a></li>
