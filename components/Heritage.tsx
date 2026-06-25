@@ -45,7 +45,7 @@ export default function Heritage() {
             <p className="section-title-en">From the Gulf to Your Table</p>
             <p className="section-desc" style={{ marginBottom: 28 }}>
               تأسست طيبه للتمور على عشق أصيل للتمر الخليجي وحرفة الانتقاء الدقيق. نجوب مزارع القصيم و الغاط و المدينة المنورة و الأردن و الأغوار الأردنية 
- باحثين عن أندر الأصناف وأجودها.
+ باحثين عن أجود الأصناف وأجودها.
             </p>
             <p className="section-desc" style={{ marginBottom: 48 }}>
               كل صندوق طيبه يحمل وعدًا: تمرة اخترناها بأيدينا، عُولجت بأدق المعايير، وصلت إليكم في أوج نضجها وعطائها.
