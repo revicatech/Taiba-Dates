@@ -14,7 +14,7 @@ export default async function Products() {
           <h2 className="section-title-ar">أجود التمور الفاخرة</h2>
           <p className="section-title-en">Premium Date Varieties</p>
           <p className="section-desc">
-            من المجدول الملكي إلى العجوة النبوية — كل صنف يخبر حكاية أرض وتاريخ.
+            من المدجول الملكي إلى العجوة النبوية — كل صنف يخبر حكاية أرض وتاريخ.
           </p>
         </RevealOnScroll>
 

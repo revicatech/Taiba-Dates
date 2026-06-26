@@ -142,7 +142,7 @@ export default function ProductForm({ mode, initial }: Props) {
 
           <div className="pf-field">
             <label className="pf-label">الاسم بالعربية <span className="pf-req">*</span></label>
-            <input className="pf-input" value={nameAR} onChange={(e) => setNameAR(e.target.value)} required placeholder="مثال: تمر المجدول الفاخر" />
+            <input className="pf-input" value={nameAR} onChange={(e) => setNameAR(e.target.value)} required placeholder="مثال: تمر المدجول الفاخر" />
           </div>
 
           <div className="pf-field">
