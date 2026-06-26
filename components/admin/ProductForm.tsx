@@ -9,6 +9,9 @@ type PendingFile = { file: File; previewUrl: string };
 let _key = 0;
 const uid = () => String(++_key);
 
+// Quick-pick sizes that are always shown; admins can toggle these or add more.
+const PRESET_SIZES = ["400 g", "500 g", "800 g", "1 KG"];
+
 type SizeRow = { key: string; label: string };
 
 type Props = { mode: "create" | "edit"; initial?: Product };
@@ -30,6 +33,7 @@ export default function ProductForm({ mode, initial }: Props) {
   const [sizes, setSizes] = useState<SizeRow[]>(
     (initial?.sizes ?? []).map((s) => ({ key: uid(), label: s.label }))
   );
+  const [sizeInput, setSizeInput] = useState("");
   const [keptImages, setKeptImages] = useState<{ url: string; publicId: string }[]>(initial?.images ?? []);
   const [newFiles, setNewFiles] = useState<PendingFile[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -54,17 +58,32 @@ export default function ProductForm({ mode, initial }: Props) {
     setSelectedSubIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   }
 
-  function addSize() {
-    setSizes((prev) => [...prev, { key: uid(), label: "" }]);
-  }
-
   function removeSize(key: string) {
     setSizes((prev) => prev.filter((r) => r.key !== key));
   }
 
-  function updateSizeLabel(key: string, label: string) {
-    setSizes((prev) => prev.map((r) => r.key === key ? { ...r, label } : r));
+  const hasSize = (label: string) =>
+    sizes.some((s) => s.label.trim().toLowerCase() === label.trim().toLowerCase());
+
+  function togglePresetSize(label: string) {
+    setSizes((prev) => {
+      const exists = prev.some((s) => s.label.trim().toLowerCase() === label.toLowerCase());
+      return exists
+        ? prev.filter((s) => s.label.trim().toLowerCase() !== label.toLowerCase())
+        : [...prev, { key: uid(), label }];
+    });
   }
+
+  function addCustomSize() {
+    const v = sizeInput.trim();
+    if (v && !hasSize(v)) setSizes((prev) => [...prev, { key: uid(), label: v }]);
+    setSizeInput("");
+  }
+
+  // Sizes the admin added that aren't one of the presets — shown as removable chips.
+  const customSizes = sizes.filter(
+    (s) => !PRESET_SIZES.some((p) => p.toLowerCase() === s.label.trim().toLowerCase())
+  );
 
   function addFiles(files: FileList | null) {
     if (!files) return;
@@ -229,31 +248,48 @@ export default function ProductForm({ mode, initial }: Props) {
           <div className="pf-panel">
             <div className="pf-panel-title">
               الأوزان / الأحجام
-              <span className="pf-section-sub">اختياري</span>
+              <span className="pf-section-sub">اختياري — اختر أو أضف</span>
             </div>
 
-            {sizes.length === 0 && (
-              <p className="pf-panel-empty">لا توجد أحجام — اضغط «+ إضافة» لإضافة خيارات وزن</p>
-            )}
-
-            <div className="pf-sizes-pills">
-              {sizes.map((row) => (
-                <div key={row.key} className="pf-size-pill-row">
-                  <input
-                    className="pf-input pf-input-sm"
-                    value={row.label}
-                    onChange={(e) => updateSizeLabel(row.key, e.target.value)}
-                    placeholder="مثال: 500g أو 1kg"
-                    dir="ltr"
-                  />
-                  <button type="button" className="pf-pill-remove" onClick={() => removeSize(row.key)} title="حذف">×</button>
-                </div>
+            {/* Preset quick-pick chips (always shown) */}
+            <div className="pf-size-presets">
+              {PRESET_SIZES.map((label) => (
+                <button
+                  key={label}
+                  type="button"
+                  className={`pf-size-chip${hasSize(label) ? " pf-size-chip-on" : ""}`}
+                  onClick={() => togglePresetSize(label)}
+                  dir="ltr"
+                >
+                  {label}
+                </button>
               ))}
             </div>
 
-            <button type="button" className="pf-add-size" onClick={addSize}>
-              + إضافة حجم
-            </button>
+            {/* Custom sizes added by the admin */}
+            {customSizes.length > 0 && (
+              <div className="pf-size-customs">
+                {customSizes.map((row) => (
+                  <span key={row.key} className="pf-size-chip pf-size-chip-on pf-size-chip-custom" dir="ltr">
+                    {row.label}
+                    <button type="button" onClick={() => removeSize(row.key)} title="حذف">×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Add a custom size */}
+            <div className="pf-tag-row">
+              <input
+                className="pf-input pf-input-sm"
+                value={sizeInput}
+                onChange={(e) => setSizeInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomSize(); } }}
+                placeholder="حجم مخصص — مثال: 2 KG"
+                dir="ltr"
+              />
+              <button type="button" className="pf-btn-secondary" onClick={addCustomSize}>إضافة</button>
+            </div>
           </div>
 
           {/* Images */}

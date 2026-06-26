@@ -1324,15 +1324,38 @@
 .pf-subcat-cb { display: none; }
 .pf-subcat-en { font-size: 11px; color: var(--color-text-muted); font-weight: 400; }
 
-/* Size pill rows */
-.pf-sizes-pills { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
-.pf-size-pill-row { display: flex; align-items: center; gap: 8px; }
-.pf-pill-remove {
-  background: none; border: none; cursor: pointer;
-  font-size: 20px; line-height: 1; color: var(--color-text-muted);
-  transition: color 150ms; padding: 0; flex-shrink: 0;
+/* Size chips: preset quick-picks + custom */
+.pf-size-presets { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.pf-size-customs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.pf-size-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(244,175,46,0.35);
+  background: var(--color-bg);
+  font-family: var(--font-latin-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: border-color 150ms, background 150ms, color 150ms;
+  user-select: none;
 }
-.pf-pill-remove:hover { color: #e53e3e; }
+.pf-size-chip:hover { border-color: var(--color-primary); background: rgba(244,175,46,0.06); }
+.pf-size-chip-on {
+  border-color: var(--color-primary);
+  background: rgba(244,175,46,0.16);
+  color: var(--color-text-primary);
+}
+.pf-size-chip-custom { cursor: default; }
+.pf-size-chip-custom button {
+  background: none; border: none; cursor: pointer;
+  font-size: 16px; line-height: 1; color: var(--color-text-muted);
+  padding: 0; transition: color 150ms;
+}
+.pf-size-chip-custom button:hover { color: #e53e3e; }
 
 /* Old sizes (kept for reference) */
 .pf-empty-sizes {
