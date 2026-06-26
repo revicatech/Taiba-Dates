@@ -1238,7 +1238,7 @@ nav .container {
 
 /* ============ FOOTER ============ */
 footer {
-  background: #150d17;
+  background: #281a2f;
   padding: 80px 0 40px;
 }
 .footer-inner-new {
@@ -1290,7 +1290,7 @@ footer {
 }
 .footer-col h4 {
   font-family: var(--font-latin-body);
-  font-size: 11px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--color-primary);
   text-transform: uppercase;
@@ -1304,6 +1304,7 @@ footer {
   color: rgba(255,255,255,0.4);
   text-decoration: none;
   transition: color var(--duration-fast);
+  cursor: pointer;
 }
 .footer-col ul li a:hover { color: var(--color-primary); }
 
