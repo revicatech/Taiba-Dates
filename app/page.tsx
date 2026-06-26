@@ -5,6 +5,7 @@ import Hero from "@/components/Hero";
 import Divider from "@/components/Divider";
 import Heritage from "@/components/Heritage";
 import Products from "@/components/Products";
+import OtherProducts from "@/components/OtherProducts";
 import Features from "@/components/Features";
 import Testimonials from "@/components/Testimonials";
 import CtaBanner from "@/components/CtaBanner";
@@ -19,6 +20,7 @@ export default function Home() {
       <Divider />
       <Heritage />
       <Products />
+      <OtherProducts />
       <Features />
       <Testimonials />
       <CtaBanner />

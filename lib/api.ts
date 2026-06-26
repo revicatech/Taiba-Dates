@@ -41,6 +41,7 @@ export type Category = {
   _id: string;
   nameEN: string;
   nameAR: string;
+  isDates: boolean;
   subCategories: SubCategory[];  // populated on GET, may be [] if not fetched
 };
 
@@ -76,9 +77,9 @@ export const authApi = {
 export const categoriesApi = {
   list: () => jsonRequest<Category[]>("/api/categories", "GET"),
   get: (id: string) => jsonRequest<Category>(`/api/categories/${id}`, "GET"),
-  create: (data: { nameAR: string; nameEN?: string; subCategories?: { nameAR: string; nameEN?: string }[] }) =>
+  create: (data: { nameAR: string; nameEN?: string; isDates?: boolean; subCategories?: { nameAR: string; nameEN?: string }[] }) =>
     jsonRequest<Category>("/api/categories", "POST", data),
-  update: (id: string, data: { nameAR?: string; nameEN?: string; subCategories?: { nameAR: string; nameEN?: string }[] }) =>
+  update: (id: string, data: { nameAR?: string; nameEN?: string; isDates?: boolean; subCategories?: { nameAR: string; nameEN?: string }[] }) =>
     jsonRequest<Category>(`/api/categories/${id}`, "PUT", data),
   remove: (id: string) => jsonRequest<void>(`/api/categories/${id}`, "DELETE"),
 };

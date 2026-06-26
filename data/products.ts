@@ -1,9 +1,23 @@
 import { connectDB } from "@/lib/db";
 import { Product as ProductModel } from "@/lib/models/Product";
+import { Category as CategoryModel } from "@/lib/models/Category";
 import mongoose from "mongoose";
 
+// Category ids split by whether they are "dates" categories or "other products".
+async function getCategoryIdsByType(): Promise<{ datesIds: mongoose.Types.ObjectId[]; otherIds: mongoose.Types.ObjectId[] }> {
+  const cats = await CategoryModel.find().select("_id isDates").lean();
+  const datesIds: mongoose.Types.ObjectId[] = [];
+  const otherIds: mongoose.Types.ObjectId[] = [];
+  for (const c of cats) {
+    // Legacy categories without the flag are treated as dates.
+    if (c.isDates === false) otherIds.push(c._id as mongoose.Types.ObjectId);
+    else datesIds.push(c._id as mongoose.Types.ObjectId);
+  }
+  return { datesIds, otherIds };
+}
+
 export type SubCategory = { _id: string; nameAR: string; nameEN: string };
-export type Category = { _id: string; nameEN: string; nameAR: string; subCategories?: SubCategory[] };
+export type Category = { _id: string; nameEN: string; nameAR: string; isDates?: boolean; subCategories?: SubCategory[] };
 
 export type ProductSizeImage = { url: string; publicId: string };
 export type ProductSize = { label: string };
@@ -84,6 +98,7 @@ function mapProduct(d: Record<string, unknown>): Product {
       _id: String(cat._id),
       nameEN: (cat.nameEN as string) ?? "",
       nameAR: (cat.nameAR as string) ?? "",
+      isDates: cat.isDates !== false,
       subCategories: ((cat.subCategories as SubCategory[]) ?? []).map((s) => ({
         _id: String(s._id),
         nameAR: s.nameAR,
@@ -129,13 +144,18 @@ export async function fetchProducts(options: FetchProductsOptions = {}): Promise
 
 /**
  * Products for the homepage "Our Collection" section: featured products first,
- * then recent non-featured products to fill up to `limit`. Sold-out products are
- * always excluded. Guarantees the section shows products even if few/none are featured.
+ * then recent non-featured products to fill up to `limit`. Sold-out products and
+ * non-dates ("other") products are always excluded — those live in their own
+ * "Other Products" section. Guarantees the section shows products even if few/none
+ * are featured.
  */
 export async function fetchCollectionProducts(limit = 3): Promise<Product[]> {
   try {
     await connectDB();
-    const featured = await ProductModel.find({ featured: true, soldOut: { $ne: true } })
+    const { datesIds } = await getCategoryIdsByType();
+    const base = { soldOut: { $ne: true }, category: { $in: datesIds } };
+
+    const featured = await ProductModel.find({ ...base, featured: true })
       .populate("category")
       .sort({ createdAt: -1 })
       .limit(limit)
@@ -145,8 +165,8 @@ export async function fetchCollectionProducts(limit = 3): Promise<Product[]> {
     if (featured.length < limit) {
       const featuredIds = featured.map((d) => d._id);
       const fillers = await ProductModel.find({
+        ...base,
         featured: { $ne: true },
-        soldOut: { $ne: true },
         _id: { $nin: featuredIds },
       })
         .populate("category")
@@ -159,6 +179,31 @@ export async function fetchCollectionProducts(limit = 3): Promise<Product[]> {
     return docs.map((d) => mapProduct(d as unknown as Record<string, unknown>));
   } catch (err) {
     console.error("[fetchCollectionProducts] error:", err);
+    return [];
+  }
+}
+
+/**
+ * Products belonging to non-dates ("other products") categories, for the public
+ * "Other Products" section. Sold-out products are excluded. Returns [] when there
+ * are no such categories/products, so the section can hide itself.
+ */
+export async function fetchOtherProducts(limit = 12): Promise<Product[]> {
+  try {
+    await connectDB();
+    const { otherIds } = await getCategoryIdsByType();
+    if (otherIds.length === 0) return [];
+    const docs = await ProductModel.find({
+      category: { $in: otherIds },
+      soldOut: { $ne: true },
+    })
+      .populate("category")
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+    return docs.map((d) => mapProduct(d as unknown as Record<string, unknown>));
+  } catch (err) {
+    console.error("[fetchOtherProducts] error:", err);
     return [];
   }
 }
