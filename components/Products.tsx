@@ -41,13 +41,21 @@ export default async function Products() {
                       )}
                       <div className="product-name-ar">{p.nameAR}</div>
                       {p.nameEN && <div className="product-name-en">{p.nameEN}</div>}
-                      {p.sizes.length > 0 && (
-                        <div className="product-weights">
-                          {p.sizes.map((s) => (
-                            <span key={s.label} className="weight-pill">{s.label}</span>
-                          ))}
-                        </div>
-                      )}
+                      {(() => {
+                        const subCats = (p.subCategoryIds ?? [])
+                          .map((id) => p.category?.subCategories?.find((s) => s._id === id))
+                          .filter(Boolean) as { _id: string; nameAR: string }[];
+                        return (subCats.length > 0 || p.sizes.length > 0) ? (
+                          <div className="product-weights">
+                            {subCats.map((s) => (
+                              <span key={s._id} className="subcat-pill">{s.nameAR}</span>
+                            ))}
+                            {p.sizes.map((s) => (
+                              <span key={s.label} className="weight-pill">{s.label}</span>
+                            ))}
+                          </div>
+                        ) : null;
+                      })()}
                       <div className="product-footer">
                         <span className="product-btn">عرض المنتج ←</span>
                       </div>

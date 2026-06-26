@@ -78,10 +78,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       images.push({ url, publicId });
       imgIdx++;
     }
-    if (images.length === 0) {
-      return NextResponse.json({ message: "صورة واحدة على الأقل مطلوبة" }, { status: 400 });
-    }
-
     const sizes = sizesData.filter((s) => s.label).map((s) => ({ label: s.label }));
     const product = await Product.create({ nameAR, nameEN, category, description, fullDescription, featured, features, sizes, subCategoryIds, images });
     await product.populate("category");

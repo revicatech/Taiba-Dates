@@ -76,11 +76,7 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
         newImages.push({ url, publicId });
         imgIdx++;
       }
-      const allImages = [...kept, ...newImages];
-      if (allImages.length === 0) {
-        return NextResponse.json({ message: "صورة واحدة على الأقل مطلوبة" }, { status: 400 });
-      }
-      update.images = allImages;
+      update.images = [...kept, ...newImages];
     }
 
     await connectDB();

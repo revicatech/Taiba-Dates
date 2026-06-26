@@ -98,9 +98,6 @@ export default function ProductForm({ mode, initial }: Props) {
 
     if (!nameAR) { setError("الاسم بالعربية مطلوب"); return; }
     if (!categoryId) { setError("يرجى اختيار الفئة"); return; }
-    const totalImages = keptImages.length + newFiles.length;
-    if (totalImages === 0) { setError("يرجى إضافة صورة واحدة على الأقل"); return; }
-
     const form = new FormData();
     form.append("nameAR", nameAR);
     form.append("nameEN", nameEN);
