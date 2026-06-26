@@ -36,6 +36,8 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
     const featured = formData.get("featured");
     const featuresRaw = formData.get("features") as string | null;
     const sizesRaw = formData.get("sizes") as string | null;
+    const subCategoryIdsRaw = formData.get("subCategoryIds") as string | null;
+    const keptImagesRaw = formData.get("keptImages") as string | null;
 
     if (nameAR !== null) update.nameAR = nameAR;
     if (nameEN !== null) update.nameEN = nameEN;
@@ -43,6 +45,7 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
     if (fullDescription !== null) update.fullDescription = fullDescription;
     if (featured !== null) update.featured = featured === "true";
     if (featuresRaw !== null) update.features = JSON.parse(featuresRaw);
+    if (subCategoryIdsRaw !== null) update.subCategoryIds = JSON.parse(subCategoryIdsRaw);
 
     if (category !== null) {
       if (!mongoose.Types.ObjectId.isValid(category)) {
@@ -57,35 +60,27 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
     }
 
     if (sizesRaw !== null) {
-      await connectDB();
-      // sizes JSON carries kept (already-uploaded) images per size
-      const sizesData: { subCategoryId?: string; label: string; images?: { url: string; publicId: string }[] }[] = JSON.parse(sizesRaw);
-      const processedSizes = [];
+      const sizesData: { label: string }[] = JSON.parse(sizesRaw);
+      update.sizes = sizesData.filter((s) => s.label).map((s) => ({ label: s.label }));
+    }
 
-      for (let si = 0; si < sizesData.length; si++) {
-        // Start with kept images from the form JSON
-        const kept = (sizesData[si].images ?? []).filter((img) => img.url);
-        // Upload any new files: image_{si}_0, image_{si}_1, ...
-        const newImages: { url: string; publicId: string }[] = [];
-        let imgIdx = 0;
-        while (true) {
-          const file = formData.get(`image_${si}_${imgIdx}`) as File | null;
-          if (!file || file.size === 0) break;
-          const { url, publicId } = await uploadToCloudinary(file);
-          newImages.push({ url, publicId });
-          imgIdx++;
-        }
-        const allImages = [...kept, ...newImages];
-        if (allImages.length === 0) {
-          return NextResponse.json({ message: `صورة واحدة على الأقل مطلوبة للحجم: ${sizesData[si].label}` }, { status: 400 });
-        }
-        processedSizes.push({
-          subCategoryId: sizesData[si].subCategoryId ?? "",
-          label: sizesData[si].label,
-          images: allImages,
-        });
+    if (keptImagesRaw !== null) {
+      await connectDB();
+      const kept: { url: string; publicId: string }[] = JSON.parse(keptImagesRaw);
+      const newImages: { url: string; publicId: string }[] = [];
+      let imgIdx = 0;
+      while (true) {
+        const file = formData.get(`image_${imgIdx}`) as File | null;
+        if (!file || file.size === 0) break;
+        const { url, publicId } = await uploadToCloudinary(file);
+        newImages.push({ url, publicId });
+        imgIdx++;
       }
-      update.sizes = processedSizes;
+      const allImages = [...kept, ...newImages];
+      if (allImages.length === 0) {
+        return NextResponse.json({ message: "صورة واحدة على الأقل مطلوبة" }, { status: 400 });
+      }
+      update.images = allImages;
     }
 
     await connectDB();

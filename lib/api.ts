@@ -45,11 +45,7 @@ export type Category = {
 };
 
 export type ProductSizeImage = { url: string; publicId: string };
-export type ProductSize = {
-  subCategoryId: string;
-  label: string;
-  images: ProductSizeImage[];
-};
+export type ProductSize = { label: string };
 
 export type Product = {
   _id: string;
@@ -61,6 +57,8 @@ export type Product = {
   featured: boolean;
   features: string[];
   sizes: ProductSize[];
+  subCategoryIds: string[];
+  images: ProductSizeImage[];
 };
 
 export type Paginated<T> = { items: T[]; page: number; limit: number; total: number; pages: number };

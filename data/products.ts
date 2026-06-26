@@ -6,11 +6,7 @@ export type SubCategory = { _id: string; nameAR: string; nameEN: string };
 export type Category = { _id: string; nameEN: string; nameAR: string; subCategories?: SubCategory[] };
 
 export type ProductSizeImage = { url: string; publicId: string };
-export type ProductSize = {
-  subCategoryId: string;
-  label: string;
-  images: ProductSizeImage[];
-};
+export type ProductSize = { label: string };
 
 export type Product = {
   _id: string;
@@ -22,48 +18,59 @@ export type Product = {
   featured: boolean;
   features: string[];
   sizes: ProductSize[];
+  subCategoryIds: string[];
+  images: ProductSizeImage[];
 };
-
-function mapSize(s: Record<string, unknown>): ProductSize {
-  // New format: images[]
-  const newImages = s.images as { url: string; publicId: string }[] | undefined;
-  if (newImages && newImages.length > 0) {
-    return {
-      subCategoryId: (s.subCategoryId as string) ?? "",
-      label: (s.label as string) ?? "",
-      images: newImages.map((img) => ({ url: img.url, publicId: img.publicId ?? "" })),
-    };
-  }
-  // Legacy format: imageUrl / imagePublicId
-  if (s.imageUrl) {
-    return {
-      subCategoryId: (s.subCategoryId as string) ?? "",
-      label: (s.label as string) ?? "",
-      images: [{ url: s.imageUrl as string, publicId: (s.imagePublicId as string) ?? "" }],
-    };
-  }
-  return { subCategoryId: (s.subCategoryId as string) ?? "", label: (s.label as string) ?? "", images: [] };
-}
 
 function mapProduct(d: Record<string, unknown>): Product {
   const cat = d.category as Record<string, unknown> | null | undefined;
   const nameAR = (d.nameAR as string) || (d.name as string) || "";
 
-  let sizes: ProductSize[];
+  // Sizes: new format is [{ label }], old format is [{ subCategoryId, label, images[] }]
   const rawSizes = d.sizes as Record<string, unknown>[] | undefined;
-  if (rawSizes && rawSizes.length > 0) {
-    sizes = rawSizes.map(mapSize);
-  } else if (d.imageUrl) {
-    // Legacy top-level imageUrl
-    const weights = (d.weights as string[]) ?? [];
-    const img = { url: d.imageUrl as string, publicId: (d.imagePublicId as string) ?? "" };
-    if (weights.length > 0) {
-      sizes = weights.map((w) => ({ subCategoryId: "", label: w, images: [img] }));
-    } else {
-      sizes = [{ subCategoryId: "", label: "—", images: [img] }];
+  const sizes: ProductSize[] = (rawSizes ?? [])
+    .filter((s) => s.label)
+    .map((s) => ({ label: s.label as string }));
+
+  // Images: new format is top-level images[], old format is per-size images
+  let images: ProductSizeImage[] = [];
+  const rawImages = d.images as { url: string; publicId: string }[] | undefined;
+  if (rawImages && rawImages.length > 0) {
+    images = rawImages.map((img) => ({ url: img.url, publicId: img.publicId ?? "" }));
+  } else if (rawSizes && rawSizes.length > 0) {
+    // Legacy: flatten per-size images
+    for (const s of rawSizes) {
+      const sImgs = s.images as { url: string; publicId: string }[] | undefined;
+      if (sImgs && sImgs.length > 0) {
+        for (const img of sImgs) {
+          if (img.url && !images.find((i) => i.url === img.url)) {
+            images.push({ url: img.url, publicId: img.publicId ?? "" });
+          }
+        }
+      } else if (s.imageUrl) {
+        const url = s.imageUrl as string;
+        if (!images.find((i) => i.url === url)) {
+          images.push({ url, publicId: (s.imagePublicId as string) ?? "" });
+        }
+      }
     }
-  } else {
-    sizes = [];
+    // Legacy top-level imageUrl
+    if (images.length === 0 && d.imageUrl) {
+      images = [{ url: d.imageUrl as string, publicId: (d.imagePublicId as string) ?? "" }];
+    }
+  }
+
+  // subCategoryIds: new top-level field, or derive from old per-size subCategoryId
+  let subCategoryIds: string[] = [];
+  const rawSubIds = d.subCategoryIds as string[] | undefined;
+  if (rawSubIds && rawSubIds.length > 0) {
+    subCategoryIds = rawSubIds;
+  } else if (rawSizes && rawSizes.length > 0) {
+    const seen = new Set<string>();
+    for (const s of rawSizes) {
+      const sid = s.subCategoryId as string | undefined;
+      if (sid && !seen.has(sid)) { seen.add(sid); subCategoryIds.push(sid); }
+    }
   }
 
   return {
@@ -85,6 +92,8 @@ function mapProduct(d: Record<string, unknown>): Product {
     featured: Boolean(d.featured),
     features: (d.features as string[]) ?? [],
     sizes,
+    subCategoryIds,
+    images,
   };
 }
 

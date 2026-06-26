@@ -1,14 +1,12 @@
 import mongoose, { Schema, Document, Model, Types } from "mongoose";
 
-export interface IProductSizeImage {
+export interface IProductImage {
   url: string;
   publicId: string;
 }
 
 export interface IProductSize {
-  subCategoryId?: string;
   label: string;
-  images: IProductSizeImage[];
 }
 
 export interface IProduct extends Document {
@@ -20,19 +18,17 @@ export interface IProduct extends Document {
   featured: boolean;
   features: string[];
   sizes: IProductSize[];
+  subCategoryIds: string[];
+  images: IProductImage[];
 }
 
-const productSizeImageSchema = new Schema<IProductSizeImage>(
+const productImageSchema = new Schema<IProductImage>(
   { url: { type: String, required: true }, publicId: { type: String, default: "" } },
   { _id: false }
 );
 
 const productSizeSchema = new Schema<IProductSize>(
-  {
-    subCategoryId: { type: String, default: "" },
-    label: { type: String, required: true, trim: true },
-    images: { type: [productSizeImageSchema], default: [] },
-  },
+  { label: { type: String, required: true, trim: true } },
   { _id: false }
 );
 
@@ -46,6 +42,8 @@ const productSchema = new Schema<IProduct>(
     featured: { type: Boolean, default: false },
     features: { type: [String], default: [] },
     sizes: { type: [productSizeSchema], default: [] },
+    subCategoryIds: { type: [String], default: [] },
+    images: { type: [productImageSchema], default: [] },
   },
   { timestamps: true }
 );

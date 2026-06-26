@@ -64,32 +64,26 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     }
 
-    const sizesData: { subCategoryId?: string; label: string }[] = JSON.parse(sizesRaw);
+    const sizesData: { label: string }[] = JSON.parse(sizesRaw);
     const features: string[] = JSON.parse(featuresRaw);
+    const subCategoryIds: string[] = JSON.parse((formData.get("subCategoryIds") as string | null) ?? "[]");
 
-    const processedSizes = [];
-    for (let si = 0; si < sizesData.length; si++) {
-      // Collect all image files for this size: image_{si}_0, image_{si}_1, ...
-      const sizeImages: { url: string; publicId: string }[] = [];
-      let imgIdx = 0;
-      while (true) {
-        const file = formData.get(`image_${si}_${imgIdx}`) as File | null;
-        if (!file || file.size === 0) break;
-        const { url, publicId } = await uploadToCloudinary(file);
-        sizeImages.push({ url, publicId });
-        imgIdx++;
-      }
-      if (sizeImages.length === 0) {
-        return NextResponse.json({ message: `صورة واحدة على الأقل مطلوبة للحجم: ${sizesData[si].label}` }, { status: 400 });
-      }
-      processedSizes.push({
-        subCategoryId: sizesData[si].subCategoryId ?? "",
-        label: sizesData[si].label,
-        images: sizeImages,
-      });
+    // Upload global product images: image_0, image_1, ...
+    const images: { url: string; publicId: string }[] = [];
+    let imgIdx = 0;
+    while (true) {
+      const file = formData.get(`image_${imgIdx}`) as File | null;
+      if (!file || file.size === 0) break;
+      const { url, publicId } = await uploadToCloudinary(file);
+      images.push({ url, publicId });
+      imgIdx++;
+    }
+    if (images.length === 0) {
+      return NextResponse.json({ message: "صورة واحدة على الأقل مطلوبة" }, { status: 400 });
     }
 
-    const product = await Product.create({ nameAR, nameEN, category, description, fullDescription, featured, features, sizes: processedSizes });
+    const sizes = sizesData.filter((s) => s.label).map((s) => ({ label: s.label }));
+    const product = await Product.create({ nameAR, nameEN, category, description, fullDescription, featured, features, sizes, subCategoryIds, images });
     await product.populate("category");
     return NextResponse.json(product, { status: 201 });
   } catch (err) {
