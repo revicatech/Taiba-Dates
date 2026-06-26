@@ -34,6 +34,7 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
     const fullDescription = formData.get("fullDescription") as string | null;
     const category = formData.get("category") as string | null;
     const featured = formData.get("featured");
+    const soldOut = formData.get("soldOut");
     const featuresRaw = formData.get("features") as string | null;
     const sizesRaw = formData.get("sizes") as string | null;
     const subCategoryIdsRaw = formData.get("subCategoryIds") as string | null;
@@ -44,6 +45,7 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
     if (description !== null) update.description = description;
     if (fullDescription !== null) update.fullDescription = fullDescription;
     if (featured !== null) update.featured = featured === "true";
+    if (soldOut !== null) update.soldOut = soldOut === "true";
     if (featuresRaw !== null) update.features = JSON.parse(featuresRaw);
     if (subCategoryIdsRaw !== null) update.subCategoryIds = JSON.parse(subCategoryIdsRaw);
 
@@ -92,17 +94,29 @@ export async function PATCH(req: NextRequest, { params }: Ctx): Promise<NextResp
   try {
     const { id } = await params;
     await requireAdmin();
-    const { featured } = await req.json() as { featured: boolean };
+    const body = await req.json() as { featured?: boolean; soldOut?: boolean };
     await connectDB();
-    if (featured === true) {
-      const count = await Product.countDocuments({ featured: true, _id: { $ne: id } });
-      if (count >= 3) {
-        return NextResponse.json({ message: "الحد الأقصى 3 منتجات مميزة على الصفحة الرئيسية" }, { status: 400 });
+
+    const update: Record<string, unknown> = {};
+    if (typeof body.featured === "boolean") {
+      if (body.featured === true) {
+        const count = await Product.countDocuments({ featured: true, _id: { $ne: id } });
+        if (count >= 3) {
+          return NextResponse.json({ message: "الحد الأقصى 3 منتجات مميزة على الصفحة الرئيسية" }, { status: 400 });
+        }
       }
+      update.featured = body.featured;
     }
-    const product = await Product.findByIdAndUpdate(id, { featured }, { new: true });
+    if (typeof body.soldOut === "boolean") {
+      update.soldOut = body.soldOut;
+    }
+    if (Object.keys(update).length === 0) {
+      return NextResponse.json({ message: "No valid fields to update" }, { status: 400 });
+    }
+
+    const product = await Product.findByIdAndUpdate(id, update, { new: true });
     if (!product) return NextResponse.json({ message: "Product not found" }, { status: 404 });
-    return NextResponse.json({ featured: product.featured });
+    return NextResponse.json({ featured: product.featured, soldOut: product.soldOut });
   } catch (err) {
     return handleApiError(err);
   }

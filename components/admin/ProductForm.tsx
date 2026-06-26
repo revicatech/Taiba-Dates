@@ -23,6 +23,7 @@ export default function ProductForm({ mode, initial }: Props) {
   const [description, setDescription] = useState(initial?.description ?? "");
   const [categoryId, setCategoryId] = useState(initial?.category?._id ?? "");
   const [featured, setFeatured] = useState(initial?.featured ?? false);
+  const [soldOut, setSoldOut] = useState(initial?.soldOut ?? false);
   const [features, setFeatures] = useState<string[]>(initial?.features ?? []);
   const [featureInput, setFeatureInput] = useState("");
   const [selectedSubIds, setSelectedSubIds] = useState<string[]>(initial?.subCategoryIds ?? []);
@@ -104,6 +105,7 @@ export default function ProductForm({ mode, initial }: Props) {
     form.append("description", description);
     form.append("category", categoryId);
     form.append("featured", String(featured));
+    form.append("soldOut", String(soldOut));
     form.append("features", JSON.stringify(features));
     form.append("subCategoryIds", JSON.stringify(selectedSubIds));
     form.append("sizes", JSON.stringify(sizes.filter((s) => s.label).map((s) => ({ label: s.label }))));
@@ -188,6 +190,14 @@ export default function ProductForm({ mode, initial }: Props) {
               <span>عرض على الصفحة الرئيسية (مميز)</span>
             </label>
             <p className="pf-hint">يُعرض بحد أقصى 3 منتجات مميزة على الصفحة الرئيسية</p>
+          </div>
+
+          <div className="pf-field">
+            <label className="pf-checkbox-label">
+              <input type="checkbox" className="pf-checkbox" checked={soldOut} onChange={(e) => setSoldOut(e.target.checked)} />
+              <span>نفذت الكمية (إخفاء من الموقع)</span>
+            </label>
+            <p className="pf-hint">عند التفعيل، لن يظهر المنتج للزوار في الموقع</p>
           </div>
         </div>
 

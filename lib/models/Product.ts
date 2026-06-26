@@ -16,6 +16,7 @@ export interface IProduct extends Document {
   fullDescription?: string;
   category: Types.ObjectId;
   featured: boolean;
+  soldOut: boolean;
   features: string[];
   sizes: IProductSize[];
   subCategoryIds: string[];
@@ -40,6 +41,7 @@ const productSchema = new Schema<IProduct>(
     fullDescription: { type: String, trim: true, default: "" },
     category: { type: Schema.Types.ObjectId, ref: "Category", required: true, index: true },
     featured: { type: Boolean, default: false },
+    soldOut: { type: Boolean, default: false, index: true },
     features: { type: [String], default: [] },
     sizes: { type: [productSizeSchema], default: [] },
     subCategoryIds: { type: [String], default: [] },

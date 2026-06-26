@@ -42,6 +42,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const description = (formData.get("description") as string | null) ?? "";
     const fullDescription = (formData.get("fullDescription") as string | null) ?? "";
     const featured = formData.get("featured") === "true";
+    const soldOut = formData.get("soldOut") === "true";
     const featuresRaw = (formData.get("features") as string | null) ?? "[]";
     const sizesRaw = (formData.get("sizes") as string | null) ?? "[]";
 
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       imgIdx++;
     }
     const sizes = sizesData.filter((s) => s.label).map((s) => ({ label: s.label }));
-    const product = await Product.create({ nameAR, nameEN, category, description, fullDescription, featured, features, sizes, subCategoryIds, images });
+    const product = await Product.create({ nameAR, nameEN, category, description, fullDescription, featured, soldOut, features, sizes, subCategoryIds, images });
     await product.populate("category");
     return NextResponse.json(product, { status: 201 });
   } catch (err) {

@@ -11,6 +11,7 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [soldTogglingId, setSoldTogglingId] = useState<string | null>(null);
 
   async function refresh() {
     try { setProducts((await productsApi.list({ limit: 100 })).items); }
@@ -34,6 +35,18 @@ export default function ProductsPage() {
       alert(err instanceof ApiError ? err.message : "فشل التحديث");
     } finally {
       setTogglingId(null);
+    }
+  }
+
+  async function onToggleSoldOut(p: Product) {
+    setSoldTogglingId(p._id);
+    try {
+      await productsApi.toggleSoldOut(p._id, !p.soldOut);
+      await refresh();
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : "فشل التحديث");
+    } finally {
+      setSoldTogglingId(null);
     }
   }
 
@@ -76,6 +89,7 @@ export default function ProductsPage() {
                 <th>الفئة</th>
                 <th>الأحجام</th>
                 <th style={{ width: 80, textAlign: "center" }}>مميز</th>
+                <th style={{ width: 110, textAlign: "center" }}>التوفر</th>
                 <th style={{ width: 160 }}></th>
               </tr>
             </thead>
@@ -84,8 +98,9 @@ export default function ProductsPage() {
                 const cover = p.images[0]?.url ?? "";
                 const canFeature = p.featured || featuredCount < MAX_FEATURED;
                 const isToggling = togglingId === p._id;
+                const isSoldToggling = soldTogglingId === p._id;
                 return (
-                  <tr key={p._id}>
+                  <tr key={p._id} className={p.soldOut ? "admin-row-soldout" : ""}>
                     <td data-label="">
                       {cover && (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -115,6 +130,16 @@ export default function ProductsPage() {
                         }
                       >
                         {isToggling ? "…" : "⭐"}
+                      </button>
+                    </td>
+                    <td data-label="التوفر" style={{ textAlign: "center" }}>
+                      <button
+                        className={`admin-stock-btn${p.soldOut ? " admin-stock-soldout" : " admin-stock-available"}`}
+                        onClick={() => onToggleSoldOut(p)}
+                        disabled={isSoldToggling}
+                        title={p.soldOut ? "نفذت الكمية — اضغط لإعادة الإتاحة" : "متوفر — اضغط لتعيينه كنافذ"}
+                      >
+                        {isSoldToggling ? "…" : p.soldOut ? "نفذ" : "متوفر"}
                       </button>
                     </td>
                     <td data-label="">

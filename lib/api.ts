@@ -55,6 +55,7 @@ export type Product = {
   fullDescription: string;
   category: Category;
   featured: boolean;
+  soldOut: boolean;
   features: string[];
   sizes: ProductSize[];
   subCategoryIds: string[];
@@ -98,4 +99,6 @@ export const productsApi = {
   remove: (id: string) => jsonRequest<void>(`/api/products/${id}`, "DELETE"),
   toggleFeatured: (id: string, featured: boolean) =>
     jsonRequest<{ featured: boolean }>(`/api/products/${id}`, "PATCH", { featured }),
+  toggleSoldOut: (id: string, soldOut: boolean) =>
+    jsonRequest<{ soldOut: boolean }>(`/api/products/${id}`, "PATCH", { soldOut }),
 };

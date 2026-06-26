@@ -16,6 +16,7 @@ export type Product = {
   fullDescription: string;
   category: Category | null;
   featured: boolean;
+  soldOut: boolean;
   features: string[];
   sizes: ProductSize[];
   subCategoryIds: string[];
@@ -90,6 +91,7 @@ function mapProduct(d: Record<string, unknown>): Product {
       })),
     } : null,
     featured: Boolean(d.featured),
+    soldOut: Boolean(d.soldOut),
     features: (d.features as string[]) ?? [],
     sizes,
     subCategoryIds,
@@ -97,15 +99,22 @@ function mapProduct(d: Record<string, unknown>): Product {
   };
 }
 
-type FetchProductsOptions = { limit?: number; category?: string; featuredOnly?: boolean };
+type FetchProductsOptions = {
+  limit?: number;
+  category?: string;
+  featuredOnly?: boolean;
+  // Sold-out products are hidden from the public site by default.
+  includeSoldOut?: boolean;
+};
 
 export async function fetchProducts(options: FetchProductsOptions = {}): Promise<Product[]> {
-  const { limit = 20, category, featuredOnly = false } = options;
+  const { limit = 20, category, featuredOnly = false, includeSoldOut = false } = options;
   try {
     await connectDB();
     const filter: Record<string, unknown> = {};
     if (category) filter.category = category;
     if (featuredOnly) filter.featured = true;
+    if (!includeSoldOut) filter.soldOut = { $ne: true };
     const docs = await ProductModel.find(filter)
       .populate("category")
       .sort({ createdAt: -1 })
@@ -118,13 +127,52 @@ export async function fetchProducts(options: FetchProductsOptions = {}): Promise
   }
 }
 
+/**
+ * Products for the homepage "Our Collection" section: featured products first,
+ * then recent non-featured products to fill up to `limit`. Sold-out products are
+ * always excluded. Guarantees the section shows products even if few/none are featured.
+ */
+export async function fetchCollectionProducts(limit = 3): Promise<Product[]> {
+  try {
+    await connectDB();
+    const featured = await ProductModel.find({ featured: true, soldOut: { $ne: true } })
+      .populate("category")
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    let docs = featured;
+    if (featured.length < limit) {
+      const featuredIds = featured.map((d) => d._id);
+      const fillers = await ProductModel.find({
+        featured: { $ne: true },
+        soldOut: { $ne: true },
+        _id: { $nin: featuredIds },
+      })
+        .populate("category")
+        .sort({ createdAt: -1 })
+        .limit(limit - featured.length)
+        .lean();
+      docs = [...featured, ...fillers];
+    }
+
+    return docs.map((d) => mapProduct(d as unknown as Record<string, unknown>));
+  } catch (err) {
+    console.error("[fetchCollectionProducts] error:", err);
+    return [];
+  }
+}
+
 export async function fetchProductById(id: string): Promise<Product | null> {
   if (!mongoose.Types.ObjectId.isValid(id)) return null;
   try {
     await connectDB();
     const doc = await ProductModel.findById(id).populate("category").lean();
     if (!doc) return null;
-    return mapProduct(doc as unknown as Record<string, unknown>);
+    const product = mapProduct(doc as unknown as Record<string, unknown>);
+    // Sold-out products are hidden from the public site.
+    if (product.soldOut) return null;
+    return product;
   } catch {
     return null;
   }
