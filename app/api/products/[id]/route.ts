@@ -39,6 +39,8 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
     const sizesRaw = formData.get("sizes") as string | null;
     const subCategoryIdsRaw = formData.get("subCategoryIds") as string | null;
     const keptImagesRaw = formData.get("keptImages") as string | null;
+    const sellByPiece = formData.get("sellByPiece");
+    const boxQuantitiesRaw = formData.get("boxQuantities") as string | null;
 
     if (nameAR !== null) update.nameAR = nameAR;
     if (nameEN !== null) update.nameEN = nameEN;
@@ -48,6 +50,12 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
     if (soldOut !== null) update.soldOut = soldOut === "true";
     if (featuresRaw !== null) update.features = JSON.parse(featuresRaw);
     if (subCategoryIdsRaw !== null) update.subCategoryIds = JSON.parse(subCategoryIdsRaw);
+    if (sellByPiece !== null) update.sellByPiece = sellByPiece === "true";
+    if (boxQuantitiesRaw !== null) {
+      update.boxQuantities = JSON.parse(boxQuantitiesRaw)
+        .map((n: unknown) => Number(n))
+        .filter((n: number) => Number.isFinite(n) && n > 0);
+    }
 
     if (category !== null) {
       if (!mongoose.Types.ObjectId.isValid(category)) {

@@ -35,6 +35,8 @@ export type Product = {
   sizes: ProductSize[];
   subCategoryIds: string[];
   images: ProductSizeImage[];
+  sellByPiece: boolean;
+  boxQuantities: number[];
 };
 
 function mapProduct(d: Record<string, unknown>): Product {
@@ -111,23 +113,27 @@ function mapProduct(d: Record<string, unknown>): Product {
     sizes,
     subCategoryIds,
     images,
+    sellByPiece: d.sellByPiece !== false,
+    boxQuantities: ((d.boxQuantities as number[]) ?? []).filter((n) => Number.isFinite(n) && n > 0),
   };
 }
 
 type FetchProductsOptions = {
   limit?: number;
   category?: string;
+  subCategory?: string;
   featuredOnly?: boolean;
   // Sold-out products are hidden from the public site by default.
   includeSoldOut?: boolean;
 };
 
 export async function fetchProducts(options: FetchProductsOptions = {}): Promise<Product[]> {
-  const { limit = 20, category, featuredOnly = false, includeSoldOut = false } = options;
+  const { limit = 20, category, subCategory, featuredOnly = false, includeSoldOut = false } = options;
   try {
     await connectDB();
     const filter: Record<string, unknown> = {};
     if (category) filter.category = category;
+    if (subCategory) filter.subCategoryIds = subCategory;
     if (featuredOnly) filter.featured = true;
     if (!includeSoldOut) filter.soldOut = { $ne: true };
     const docs = await ProductModel.find(filter)

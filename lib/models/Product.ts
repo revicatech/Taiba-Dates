@@ -21,6 +21,8 @@ export interface IProduct extends Document {
   sizes: IProductSize[];
   subCategoryIds: string[];
   images: IProductImage[];
+  sellByPiece: boolean;
+  boxQuantities: number[];
 }
 
 const productImageSchema = new Schema<IProductImage>(
@@ -46,6 +48,8 @@ const productSchema = new Schema<IProduct>(
     sizes: { type: [productSizeSchema], default: [] },
     subCategoryIds: { type: [String], default: [] },
     images: { type: [productImageSchema], default: [] },
+    sellByPiece: { type: Boolean, default: true },
+    boxQuantities: { type: [Number], default: [] },
   },
   { timestamps: true }
 );

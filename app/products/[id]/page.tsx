@@ -53,6 +53,8 @@ export default async function ProductDetailPage({ params }: Props) {
             subCategoryIds={product.subCategoryIds}
             subCategories={subCategories}
             images={product.images}
+            sellByPiece={product.sellByPiece}
+            boxQuantities={product.boxQuantities}
           />
 
         </div>

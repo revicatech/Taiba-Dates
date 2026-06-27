@@ -26,15 +26,30 @@ type Props = {
   subCategoryIds: string[];
   subCategories: SubCategory[];
   images: ProductSizeImage[];
+  sellByPiece: boolean;
+  boxQuantities: number[];
 };
+
+// Unit (packaging) options: a single "piece" option and one per box quantity.
+type UnitOption = { key: string; label: string };
+function buildUnitOptions(sellByPiece: boolean, boxQuantities: number[]): UnitOption[] {
+  const opts: UnitOption[] = [];
+  if (sellByPiece) opts.push({ key: "piece", label: "بالحبة" });
+  for (const qty of boxQuantities) opts.push({ key: `box:${qty}`, label: `صندوق ${qty} قطعة` });
+  return opts;
+}
 
 export default function ProductDetailClient({
   nameAR, nameEN, description, categoryNameAR, categoryNameEN,
   features, sizes, subCategoryIds, subCategories, images,
+  sellByPiece, boxQuantities,
 }: Props) {
+  const unitOptions = buildUnitOptions(sellByPiece, boxQuantities);
+
   const [slideIdx, setSlideIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string | null>(sizes[0]?.label ?? null);
+  const [selectedUnit, setSelectedUnit] = useState<string | null>(unitOptions[0]?.key ?? null);
   const [selectedSubId, setSelectedSubId] = useState<string | null>(subCategoryIds[0] ?? null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const touchStartX = useRef<number | null>(null);
@@ -72,7 +87,10 @@ export default function ProductDetailClient({
       ? ` - ${resolvedSubCats.find((s) => s._id === selectedSubId)?.nameAR ?? ""}`
       : "";
     const sizeLabel = selectedSize ? ` - ${selectedSize}` : "";
-    const msg = `مرحباً،\nأريد طلب ${nameAR}${subLabel}${sizeLabel}`;
+    const unitLabel = selectedUnit
+      ? ` - ${unitOptions.find((u) => u.key === selectedUnit)?.label ?? ""}`
+      : "";
+    const msg = `مرحباً،\nأريد طلب ${nameAR}${subLabel}${sizeLabel}${unitLabel}`;
     return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
   }
 
@@ -175,6 +193,24 @@ export default function ProductDetailClient({
                   onClick={() => setSelectedSize(selectedSize === s.label ? null : s.label)}
                 >
                   {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {unitOptions.length > 0 && (
+          <div className="pdv2-sub-section">
+            <p className="pdv2-selector-label">طريقة البيع:</p>
+            <div className="pdv2-chips">
+              {unitOptions.map((u) => (
+                <button
+                  key={u.key}
+                  type="button"
+                  className={`pdv2-chip${selectedUnit === u.key ? " pdv2-chip-active" : ""}`}
+                  onClick={() => setSelectedUnit(selectedUnit === u.key ? null : u.key)}
+                >
+                  {u.label}
                 </button>
               ))}
             </div>

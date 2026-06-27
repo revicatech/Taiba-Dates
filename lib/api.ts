@@ -61,6 +61,8 @@ export type Product = {
   sizes: ProductSize[];
   subCategoryIds: string[];
   images: ProductSizeImage[];
+  sellByPiece: boolean;
+  boxQuantities: number[];
 };
 
 export type Paginated<T> = { items: T[]; page: number; limit: number; total: number; pages: number };

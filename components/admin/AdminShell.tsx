@@ -35,26 +35,36 @@ export default function AdminShell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    authApi
-      .me()
-      .then(({ admin }) => {
+
+    // middleware.ts is the real auth gate — if this component renders, the route
+    // was already authorized server-side. me() is only used to show the username.
+    // A 401 here right after a successful navigation is almost always a transient
+    // serverless cold-start/race, so we retry once and never hard-logout on it
+    // (that was causing the "logged out when opening categories" bug in prod).
+    async function load(attempt = 0) {
+      try {
+        const { admin } = await authApi.me();
         if (!cancelled) {
           setAdmin(admin);
           setChecking(false);
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         if (cancelled) return;
-        if (err instanceof ApiError && err.status === 401) {
-          router.replace("/admin/login");
-        } else {
-          setChecking(false);
+        if (err instanceof ApiError && err.status === 401 && attempt === 0) {
+          setTimeout(() => { if (!cancelled) load(1); }, 400);
+          return;
         }
-      });
+        // Don't bounce to login: middleware already gated this route. Show the
+        // shell so a transient hiccup doesn't appear as a logout.
+        setChecking(false);
+      }
+    }
+
+    load();
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, []);
 
   async function handleLogout() {
     try {
@@ -65,11 +75,14 @@ export default function AdminShell({ children }: { children: ReactNode }) {
     router.replace("/admin/login");
   }
 
-  if (checking || !admin) {
+  if (checking) {
     return <div className="admin-loading">جاري التحقق…</div>;
   }
 
-  const avatar = admin.username.charAt(0).toUpperCase();
+  // admin may be null if me() failed transiently; middleware already gated entry,
+  // so render the shell anyway with a neutral fallback for the username/avatar.
+  const username = admin?.username ?? "المشرف";
+  const avatar = username.charAt(0).toUpperCase();
 
   return (
     <div className={`admin-shell${menuOpen ? " menu-open" : ""}`}>
@@ -122,7 +135,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
         <div className="admin-sidebar-footer">
           <div className="admin-sidebar-user">
             <div className="admin-sidebar-avatar">{avatar}</div>
-            <span>{admin.username}</span>
+            <span>{username}</span>
           </div>
           <button className="admin-logout" onClick={handleLogout}>
             تسجيل الخروج

@@ -68,6 +68,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const sizesData: { label: string }[] = JSON.parse(sizesRaw);
     const features: string[] = JSON.parse(featuresRaw);
     const subCategoryIds: string[] = JSON.parse((formData.get("subCategoryIds") as string | null) ?? "[]");
+    const sellByPiece = formData.get("sellByPiece") !== "false";
+    const boxQuantities: number[] = JSON.parse((formData.get("boxQuantities") as string | null) ?? "[]")
+      .map((n: unknown) => Number(n))
+      .filter((n: number) => Number.isFinite(n) && n > 0);
 
     // Upload global product images: image_0, image_1, ...
     const images: { url: string; publicId: string }[] = [];
@@ -80,7 +84,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       imgIdx++;
     }
     const sizes = sizesData.filter((s) => s.label).map((s) => ({ label: s.label }));
-    const product = await Product.create({ nameAR, nameEN, category, description, fullDescription, featured, soldOut, features, sizes, subCategoryIds, images });
+    const product = await Product.create({ nameAR, nameEN, category, description, fullDescription, featured, soldOut, features, sizes, subCategoryIds, images, sellByPiece, boxQuantities });
     await product.populate("category");
     return NextResponse.json(product, { status: 201 });
   } catch (err) {

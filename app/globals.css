@@ -1522,6 +1522,43 @@ footer {
   opacity: 0.7;
 }
 
+/* Second-level variety (subcategory) filter */
+.category-subfilter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+.category-subchip {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1.5px solid rgba(133, 68, 110, 0.30);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-family: var(--font-arabic);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast),
+    border-color var(--duration-fast),
+    color var(--duration-fast);
+  white-space: nowrap;
+}
+.category-subchip:hover {
+  background: rgba(133, 68, 110, 0.07);
+  border-color: var(--color-secondary);
+}
+.category-subchip.active {
+  background: var(--color-secondary);
+  border-color: var(--color-secondary);
+  color: #fff;
+}
+
 @media (max-width: 768px) {
   .page-hero {
     min-height: 44vh;

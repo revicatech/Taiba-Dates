@@ -12,6 +12,9 @@ const uid = () => String(++_key);
 // Quick-pick sizes that are always shown; admins can toggle these or add more.
 const PRESET_SIZES = ["400 g", "500 g", "800 g", "1 KG"];
 
+// Quick-pick box quantities (pieces per box) that are always shown.
+const PRESET_BOXES = [10, 20];
+
 type SizeRow = { key: string; label: string };
 
 type Props = { mode: "create" | "edit"; initial?: Product };
@@ -34,6 +37,9 @@ export default function ProductForm({ mode, initial }: Props) {
     (initial?.sizes ?? []).map((s) => ({ key: uid(), label: s.label }))
   );
   const [sizeInput, setSizeInput] = useState("");
+  const [sellByPiece, setSellByPiece] = useState(initial?.sellByPiece ?? true);
+  const [boxQuantities, setBoxQuantities] = useState<number[]>(initial?.boxQuantities ?? []);
+  const [boxInput, setBoxInput] = useState("");
   const [keptImages, setKeptImages] = useState<{ url: string; publicId: string }[]>(initial?.images ?? []);
   const [newFiles, setNewFiles] = useState<PendingFile[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -85,6 +91,23 @@ export default function ProductForm({ mode, initial }: Props) {
     (s) => !PRESET_SIZES.some((p) => p.toLowerCase() === s.label.trim().toLowerCase())
   );
 
+  function toggleBox(qty: number) {
+    setBoxQuantities((prev) =>
+      prev.includes(qty) ? prev.filter((n) => n !== qty) : [...prev, qty]
+    );
+  }
+
+  function addCustomBox() {
+    const n = Number(boxInput.trim());
+    if (Number.isFinite(n) && n > 0 && !boxQuantities.includes(n)) {
+      setBoxQuantities((prev) => [...prev, n]);
+    }
+    setBoxInput("");
+  }
+
+  // Custom box quantities the admin added beyond the presets — removable chips.
+  const customBoxes = boxQuantities.filter((n) => !PRESET_BOXES.includes(n));
+
   function addFiles(files: FileList | null) {
     if (!files) return;
     const added: PendingFile[] = Array.from(files).map((file) => ({
@@ -128,6 +151,8 @@ export default function ProductForm({ mode, initial }: Props) {
     form.append("features", JSON.stringify(features));
     form.append("subCategoryIds", JSON.stringify(selectedSubIds));
     form.append("sizes", JSON.stringify(sizes.filter((s) => s.label).map((s) => ({ label: s.label }))));
+    form.append("sellByPiece", String(sellByPiece));
+    form.append("boxQuantities", JSON.stringify(boxQuantities));
 
     if (mode === "edit") {
       form.append("keptImages", JSON.stringify(keptImages));
@@ -289,6 +314,64 @@ export default function ProductForm({ mode, initial }: Props) {
                 dir="ltr"
               />
               <button type="button" className="pf-btn-secondary" onClick={addCustomSize}>إضافة</button>
+            </div>
+          </div>
+
+          {/* Packaging / selling unit */}
+          <div className="pf-panel">
+            <div className="pf-panel-title">
+              الوحدة / التغليف
+              <span className="pf-section-sub">مفرد وجملة</span>
+            </div>
+
+            <label className="pf-checkbox-label" style={{ marginBottom: 12 }}>
+              <input type="checkbox" className="pf-checkbox" checked={sellByPiece} onChange={(e) => setSellByPiece(e.target.checked)} />
+              <span>يُباع بالحبة (مفرق)</span>
+            </label>
+
+            <label className="pf-label-sm" style={{ display: "block", marginBottom: 6 }}>
+              الصناديق (جملة) — عدد القطع في الصندوق
+            </label>
+
+            {/* Preset box quantities (always shown) */}
+            <div className="pf-size-presets">
+              {PRESET_BOXES.map((qty) => (
+                <button
+                  key={qty}
+                  type="button"
+                  className={`pf-size-chip${boxQuantities.includes(qty) ? " pf-size-chip-on" : ""}`}
+                  onClick={() => toggleBox(qty)}
+                >
+                  صندوق {qty} قطعة
+                </button>
+              ))}
+            </div>
+
+            {/* Custom box quantities */}
+            {customBoxes.length > 0 && (
+              <div className="pf-size-customs">
+                {customBoxes.map((qty) => (
+                  <span key={qty} className="pf-size-chip pf-size-chip-on pf-size-chip-custom">
+                    صندوق {qty} قطعة
+                    <button type="button" onClick={() => toggleBox(qty)} title="حذف">×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Add a custom box quantity */}
+            <div className="pf-tag-row">
+              <input
+                className="pf-input pf-input-sm"
+                value={boxInput}
+                onChange={(e) => setBoxInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomBox(); } }}
+                placeholder="عدد مخصص — مثال: 12"
+                type="number"
+                min={1}
+                dir="ltr"
+              />
+              <button type="button" className="pf-btn-secondary" onClick={addCustomBox}>إضافة</button>
             </div>
           </div>
 

@@ -9,7 +9,7 @@ import RevealOnScroll from "@/components/RevealOnScroll";
 import { fetchProducts } from "@/data/products";
 import { fetchCategories } from "@/data/categories";
 
-type Props = { searchParams: { category?: string } };
+type Props = { searchParams: { category?: string; sub?: string } };
 
 export const metadata = {
   title: "المنتجات — Tiba For Dates",
@@ -18,8 +18,10 @@ export const metadata = {
 
 export default async function ProductsPage({ searchParams }: Props) {
   const activeCategoryId = searchParams.category;
+  // A subcategory filter only applies within its category.
+  const activeSubId = activeCategoryId ? searchParams.sub : undefined;
   const [products, categories] = await Promise.all([
-    fetchProducts({ limit: 100, category: activeCategoryId }),
+    fetchProducts({ limit: 100, category: activeCategoryId, subCategory: activeSubId }),
     fetchCategories(),
   ]);
   const activeCategory = activeCategoryId ? categories.find((c) => c._id === activeCategoryId) : undefined;
@@ -30,7 +32,7 @@ export default async function ProductsPage({ searchParams }: Props) {
       <ProductsPageHero totalCount={products.length} activeCategoryName={activeCategory?.nameAR} />
       <section className="products-page-section">
         <div className="container">
-          <CategoryFilter categories={categories} activeId={activeCategoryId} />
+          <CategoryFilter categories={categories} activeId={activeCategoryId} activeSubId={activeSubId} />
           {products.length === 0 ? (
             <RevealOnScroll style={{ textAlign: "center", padding: "96px 24px", color: "var(--color-text-muted)" }}>
               <p style={{ fontSize: 18 }}>
