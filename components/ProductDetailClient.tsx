@@ -6,8 +6,9 @@ import { useCart } from "@/components/cart/CartProvider";
 import { orderLine, waLink } from "@/lib/whatsapp";
 
 const FEATURE_ICONS: Record<string, string> = {
-  "100% Natural": "🌴", "طبيعي 100%": "🌴",
+  "100% Natural": "🌿", "طبيعي 100%": "🌿",
   "Premium Packaging": "📦", "تغليف فاخر": "📦",
+  "جودة استثنائية": "✨",
   "Fast Shipping": "🚚", "شحن سريع": "🚚",
   "High Quality": "⭐", "جودة عالية": "⭐",
   "Handpicked": "✋", "مختار بعناية": "✋",

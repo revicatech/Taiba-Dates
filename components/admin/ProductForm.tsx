@@ -12,6 +12,14 @@ const PRESET_WEIGHTS = ["400 g", "500 g", "800 g", "1 KG"];
 // Quick-pick box quantities (pieces per box) that are always shown.
 const PRESET_BOXES = [10, 20];
 
+// Suggested features always offered as quick-pick chips (stored as plain text;
+// the emoji is rendered on the product page via its FEATURE_ICONS map).
+const PRESET_FEATURES = [
+  { label: "جودة استثنائية", icon: "✨" },
+  { label: "طبيعي 100%", icon: "🌿" },
+  { label: "تغليف فاخر", icon: "📦" },
+];
+
 const norm = (s: string) => s.trim().toLowerCase();
 
 type Props = { mode: "create" | "edit"; initial?: Product };
@@ -141,6 +149,14 @@ export default function ProductForm({ mode, initial }: Props) {
     setFeatures((prev) => prev.filter((x) => x !== f));
   }
 
+  function toggleFeature(label: string) {
+    setFeatures((prev) =>
+      prev.some((f) => norm(f) === norm(label))
+        ? prev.filter((f) => norm(f) !== norm(label))
+        : [...prev, label]
+    );
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -218,10 +234,27 @@ export default function ProductForm({ mode, initial }: Props) {
 
           <div className="pf-field">
             <label className="pf-label">المميزات <span className="pf-opt">(اختياري)</span></label>
-            <div className="pf-tags-list">
-              {features.map((f) => (
-                <span key={f} className="pf-tag">{f}<button type="button" onClick={() => removeFeature(f)}>×</button></span>
+
+            {/* Always-on suggestions */}
+            <div className="pf-size-presets" style={{ marginBottom: 8 }}>
+              {PRESET_FEATURES.map((s) => (
+                <button
+                  key={s.label}
+                  type="button"
+                  className={`pf-size-chip${features.some((f) => norm(f) === norm(s.label)) ? " pf-size-chip-on" : ""}`}
+                  onClick={() => toggleFeature(s.label)}
+                >
+                  {s.icon} {s.label}
+                </button>
               ))}
+            </div>
+
+            <div className="pf-tags-list">
+              {features
+                .filter((f) => !PRESET_FEATURES.some((s) => norm(s.label) === norm(f)))
+                .map((f) => (
+                  <span key={f} className="pf-tag">{f}<button type="button" onClick={() => removeFeature(f)}>×</button></span>
+                ))}
             </div>
             <div className="pf-tag-row">
               <input
