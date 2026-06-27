@@ -20,7 +20,6 @@ export type SubCategory = { _id: string; nameAR: string; nameEN: string };
 export type Category = { _id: string; nameEN: string; nameAR: string; isDates?: boolean; subCategories?: SubCategory[] };
 
 export type ProductSizeImage = { url: string; publicId: string };
-export type ProductSize = { label: string };
 
 export type Product = {
   _id: string;
@@ -32,7 +31,8 @@ export type Product = {
   featured: boolean;
   soldOut: boolean;
   features: string[];
-  sizes: ProductSize[];
+  grades: string[];
+  weights: string[];
   subCategoryIds: string[];
   images: ProductSizeImage[];
   sellByPiece: boolean;
@@ -43,11 +43,14 @@ function mapProduct(d: Record<string, unknown>): Product {
   const cat = d.category as Record<string, unknown> | null | undefined;
   const nameAR = (d.nameAR as string) || (d.name as string) || "";
 
-  // Sizes: new format is [{ label }], old format is [{ subCategoryId, label, images[] }]
+  // Legacy `sizes` ([{ label }]) held weight labels — migrate into `weights`.
   const rawSizes = d.sizes as Record<string, unknown>[] | undefined;
-  const sizes: ProductSize[] = (rawSizes ?? [])
+  const legacyWeights = (rawSizes ?? [])
     .filter((s) => s.label)
-    .map((s) => ({ label: s.label as string }));
+    .map((s) => s.label as string);
+  const grades = ((d.grades as string[]) ?? []).filter(Boolean);
+  const rawWeights = ((d.weights as string[]) ?? []).filter(Boolean);
+  const weights = rawWeights.length > 0 ? rawWeights : legacyWeights;
 
   // Images: new format is top-level images[], old format is per-size images
   let images: ProductSizeImage[] = [];
@@ -110,7 +113,8 @@ function mapProduct(d: Record<string, unknown>): Product {
     featured: Boolean(d.featured),
     soldOut: Boolean(d.soldOut),
     features: (d.features as string[]) ?? [],
-    sizes,
+    grades,
+    weights,
     subCategoryIds,
     images,
     sellByPiece: d.sellByPiece !== false,
@@ -122,18 +126,22 @@ type FetchProductsOptions = {
   limit?: number;
   category?: string;
   subCategory?: string;
+  // "box" → only products offering a box; "piece" → only products sold by the piece.
+  unit?: "box" | "piece";
   featuredOnly?: boolean;
   // Sold-out products are hidden from the public site by default.
   includeSoldOut?: boolean;
 };
 
 export async function fetchProducts(options: FetchProductsOptions = {}): Promise<Product[]> {
-  const { limit = 20, category, subCategory, featuredOnly = false, includeSoldOut = false } = options;
+  const { limit = 20, category, subCategory, unit, featuredOnly = false, includeSoldOut = false } = options;
   try {
     await connectDB();
     const filter: Record<string, unknown> = {};
     if (category) filter.category = category;
     if (subCategory) filter.subCategoryIds = subCategory;
+    if (unit === "box") filter["boxQuantities.0"] = { $exists: true };
+    if (unit === "piece") filter.sellByPiece = { $ne: false };
     if (featuredOnly) filter.featured = true;
     if (!includeSoldOut) filter.soldOut = { $ne: true };
     const docs = await ProductModel.find(filter)

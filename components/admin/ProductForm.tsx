@@ -6,16 +6,13 @@ import { ApiError, categoriesApi, productsApi, type Category, type Product } fro
 
 type PendingFile = { file: File; previewUrl: string };
 
-let _key = 0;
-const uid = () => String(++_key);
-
-// Quick-pick sizes that are always shown; admins can toggle these or add more.
-const PRESET_SIZES = ["400 g", "500 g", "800 g", "1 KG"];
+// Quick-pick weights that are always shown; admins can toggle these or add more.
+const PRESET_WEIGHTS = ["400 g", "500 g", "800 g", "1 KG"];
 
 // Quick-pick box quantities (pieces per box) that are always shown.
 const PRESET_BOXES = [10, 20];
 
-type SizeRow = { key: string; label: string };
+const norm = (s: string) => s.trim().toLowerCase();
 
 type Props = { mode: "create" | "edit"; initial?: Product };
 
@@ -33,10 +30,10 @@ export default function ProductForm({ mode, initial }: Props) {
   const [features, setFeatures] = useState<string[]>(initial?.features ?? []);
   const [featureInput, setFeatureInput] = useState("");
   const [selectedSubIds, setSelectedSubIds] = useState<string[]>(initial?.subCategoryIds ?? []);
-  const [sizes, setSizes] = useState<SizeRow[]>(
-    (initial?.sizes ?? []).map((s) => ({ key: uid(), label: s.label }))
-  );
-  const [sizeInput, setSizeInput] = useState("");
+  const [grades, setGrades] = useState<string[]>(initial?.grades ?? []);
+  const [gradeInput, setGradeInput] = useState("");
+  const [weights, setWeights] = useState<string[]>(initial?.weights ?? []);
+  const [weightInput, setWeightInput] = useState("");
   const [sellByPiece, setSellByPiece] = useState(initial?.sellByPiece ?? true);
   const [boxQuantities, setBoxQuantities] = useState<number[]>(initial?.boxQuantities ?? []);
   const [boxInput, setBoxInput] = useState("");
@@ -64,32 +61,34 @@ export default function ProductForm({ mode, initial }: Props) {
     setSelectedSubIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   }
 
-  function removeSize(key: string) {
-    setSizes((prev) => prev.filter((r) => r.key !== key));
+  // ── Grades (الأحجام / الأصناف, e.g. جامبو) — free-text chips ──
+  function addGrade() {
+    const v = gradeInput.trim();
+    if (v && !grades.some((g) => norm(g) === norm(v))) setGrades((prev) => [...prev, v]);
+    setGradeInput("");
+  }
+  function removeGrade(label: string) {
+    setGrades((prev) => prev.filter((g) => g !== label));
   }
 
-  const hasSize = (label: string) =>
-    sizes.some((s) => s.label.trim().toLowerCase() === label.trim().toLowerCase());
-
-  function togglePresetSize(label: string) {
-    setSizes((prev) => {
-      const exists = prev.some((s) => s.label.trim().toLowerCase() === label.toLowerCase());
-      return exists
-        ? prev.filter((s) => s.label.trim().toLowerCase() !== label.toLowerCase())
-        : [...prev, { key: uid(), label }];
-    });
+  // ── Weights (الأوزان, e.g. 500g) — presets + custom ──
+  const hasWeight = (label: string) => weights.some((w) => norm(w) === norm(label));
+  function togglePresetWeight(label: string) {
+    setWeights((prev) =>
+      prev.some((w) => norm(w) === norm(label))
+        ? prev.filter((w) => norm(w) !== norm(label))
+        : [...prev, label]
+    );
   }
-
-  function addCustomSize() {
-    const v = sizeInput.trim();
-    if (v && !hasSize(v)) setSizes((prev) => [...prev, { key: uid(), label: v }]);
-    setSizeInput("");
+  function addCustomWeight() {
+    const v = weightInput.trim();
+    if (v && !hasWeight(v)) setWeights((prev) => [...prev, v]);
+    setWeightInput("");
   }
-
-  // Sizes the admin added that aren't one of the presets — shown as removable chips.
-  const customSizes = sizes.filter(
-    (s) => !PRESET_SIZES.some((p) => p.toLowerCase() === s.label.trim().toLowerCase())
-  );
+  function removeWeight(label: string) {
+    setWeights((prev) => prev.filter((w) => w !== label));
+  }
+  const customWeights = weights.filter((w) => !PRESET_WEIGHTS.some((p) => norm(p) === norm(w)));
 
   function toggleBox(qty: number) {
     setBoxQuantities((prev) =>
@@ -150,7 +149,8 @@ export default function ProductForm({ mode, initial }: Props) {
     form.append("soldOut", String(soldOut));
     form.append("features", JSON.stringify(features));
     form.append("subCategoryIds", JSON.stringify(selectedSubIds));
-    form.append("sizes", JSON.stringify(sizes.filter((s) => s.label).map((s) => ({ label: s.label }))));
+    form.append("grades", JSON.stringify(grades));
+    form.append("weights", JSON.stringify(weights));
     form.append("sellByPiece", String(sellByPiece));
     form.append("boxQuantities", JSON.stringify(boxQuantities));
 
@@ -269,21 +269,51 @@ export default function ProductForm({ mode, initial }: Props) {
             </div>
           )}
 
-          {/* Sizes */}
+          {/* Grades / sizes (e.g. جامبو) */}
           <div className="pf-panel">
             <div className="pf-panel-title">
-              الأوزان / الأحجام
+              الأحجام / الأصناف
+              <span className="pf-section-sub">اختياري — مثل: جامبو</span>
+            </div>
+
+            {grades.length > 0 && (
+              <div className="pf-size-customs">
+                {grades.map((g) => (
+                  <span key={g} className="pf-size-chip pf-size-chip-on pf-size-chip-custom">
+                    {g}
+                    <button type="button" onClick={() => removeGrade(g)} title="حذف">×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className="pf-tag-row">
+              <input
+                className="pf-input pf-input-sm"
+                value={gradeInput}
+                onChange={(e) => setGradeInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addGrade(); } }}
+                placeholder="مثال: جامبو"
+              />
+              <button type="button" className="pf-btn-secondary" onClick={addGrade}>إضافة</button>
+            </div>
+          </div>
+
+          {/* Weights (e.g. 500g) */}
+          <div className="pf-panel">
+            <div className="pf-panel-title">
+              الأوزان
               <span className="pf-section-sub">اختياري — اختر أو أضف</span>
             </div>
 
             {/* Preset quick-pick chips (always shown) */}
             <div className="pf-size-presets">
-              {PRESET_SIZES.map((label) => (
+              {PRESET_WEIGHTS.map((label) => (
                 <button
                   key={label}
                   type="button"
-                  className={`pf-size-chip${hasSize(label) ? " pf-size-chip-on" : ""}`}
-                  onClick={() => togglePresetSize(label)}
+                  className={`pf-size-chip${hasWeight(label) ? " pf-size-chip-on" : ""}`}
+                  onClick={() => togglePresetWeight(label)}
                   dir="ltr"
                 >
                   {label}
@@ -291,29 +321,29 @@ export default function ProductForm({ mode, initial }: Props) {
               ))}
             </div>
 
-            {/* Custom sizes added by the admin */}
-            {customSizes.length > 0 && (
+            {/* Custom weights added by the admin */}
+            {customWeights.length > 0 && (
               <div className="pf-size-customs">
-                {customSizes.map((row) => (
-                  <span key={row.key} className="pf-size-chip pf-size-chip-on pf-size-chip-custom" dir="ltr">
-                    {row.label}
-                    <button type="button" onClick={() => removeSize(row.key)} title="حذف">×</button>
+                {customWeights.map((w) => (
+                  <span key={w} className="pf-size-chip pf-size-chip-on pf-size-chip-custom" dir="ltr">
+                    {w}
+                    <button type="button" onClick={() => removeWeight(w)} title="حذف">×</button>
                   </span>
                 ))}
               </div>
             )}
 
-            {/* Add a custom size */}
+            {/* Add a custom weight */}
             <div className="pf-tag-row">
               <input
                 className="pf-input pf-input-sm"
-                value={sizeInput}
-                onChange={(e) => setSizeInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomSize(); } }}
-                placeholder="حجم مخصص — مثال: 2 KG"
+                value={weightInput}
+                onChange={(e) => setWeightInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomWeight(); } }}
+                placeholder="وزن مخصص — مثال: 2 KG"
                 dir="ltr"
               />
-              <button type="button" className="pf-btn-secondary" onClick={addCustomSize}>إضافة</button>
+              <button type="button" className="pf-btn-secondary" onClick={addCustomWeight}>إضافة</button>
             </div>
           </div>
 

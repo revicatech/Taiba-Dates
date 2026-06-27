@@ -43,13 +43,15 @@ export default async function ProductDetailPage({ params }: Props) {
           </div>
 
           <ProductDetailClient
+            productId={product._id}
             nameAR={product.nameAR}
             nameEN={product.nameEN}
             description={product.description}
             categoryNameAR={product.category?.nameAR ?? ""}
             categoryNameEN={product.category?.nameEN ?? ""}
             features={product.features}
-            sizes={product.sizes}
+            grades={product.grades}
+            weights={product.weights}
             subCategoryIds={product.subCategoryIds}
             subCategories={subCategories}
             images={product.images}

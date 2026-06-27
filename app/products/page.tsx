@@ -9,7 +9,7 @@ import RevealOnScroll from "@/components/RevealOnScroll";
 import { fetchProducts } from "@/data/products";
 import { fetchCategories } from "@/data/categories";
 
-type Props = { searchParams: { category?: string; sub?: string } };
+type Props = { searchParams: { category?: string; sub?: string; unit?: string } };
 
 export const metadata = {
   title: "المنتجات — Tiba For Dates",
@@ -20,8 +20,9 @@ export default async function ProductsPage({ searchParams }: Props) {
   const activeCategoryId = searchParams.category;
   // A subcategory filter only applies within its category.
   const activeSubId = activeCategoryId ? searchParams.sub : undefined;
+  const activeUnit = searchParams.unit === "box" || searchParams.unit === "piece" ? searchParams.unit : undefined;
   const [products, categories] = await Promise.all([
-    fetchProducts({ limit: 100, category: activeCategoryId, subCategory: activeSubId }),
+    fetchProducts({ limit: 100, category: activeCategoryId, subCategory: activeSubId, unit: activeUnit }),
     fetchCategories(),
   ]);
   const activeCategory = activeCategoryId ? categories.find((c) => c._id === activeCategoryId) : undefined;
@@ -32,7 +33,7 @@ export default async function ProductsPage({ searchParams }: Props) {
       <ProductsPageHero totalCount={products.length} activeCategoryName={activeCategory?.nameAR} />
       <section className="products-page-section">
         <div className="container">
-          <CategoryFilter categories={categories} activeId={activeCategoryId} activeSubId={activeSubId} />
+          <CategoryFilter categories={categories} activeId={activeCategoryId} activeSubId={activeSubId} activeUnit={activeUnit} />
           {products.length === 0 ? (
             <RevealOnScroll style={{ textAlign: "center", padding: "96px 24px", color: "var(--color-text-muted)" }}>
               <p style={{ fontSize: 18 }}>
@@ -62,13 +63,16 @@ export default async function ProductsPage({ searchParams }: Props) {
                           const subCats = (p.subCategoryIds ?? [])
                             .map((id) => p.category?.subCategories?.find((s) => s._id === id))
                             .filter(Boolean) as { _id: string; nameAR: string }[];
-                          return (subCats.length > 0 || p.sizes.length > 0) ? (
+                          return (subCats.length > 0 || p.grades.length > 0 || p.weights.length > 0) ? (
                             <div className="product-weights">
                               {subCats.map((s) => (
                                 <span key={s._id} className="subcat-pill">{s.nameAR}</span>
                               ))}
-                              {p.sizes.map((s) => (
-                                <span key={s.label} className="weight-pill">{s.label}</span>
+                              {p.grades.map((g) => (
+                                <span key={g} className="weight-pill">{g}</span>
+                              ))}
+                              {p.weights.map((w) => (
+                                <span key={w} className="weight-pill">{w}</span>
                               ))}
                             </div>
                           ) : null;

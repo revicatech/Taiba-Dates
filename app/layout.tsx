@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Cairo, Tajawal, Lemonada, Cormorant_Garamond, DM_Sans } from "next/font/google";
 import "./globals.css";
+import { CartProvider } from "@/components/cart/CartProvider";
+import CartDrawer from "@/components/cart/CartDrawer";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -54,7 +56,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="ar" dir="rtl" className={fontVars}>
-      <body>{children}</body>
+      <body>
+        <CartProvider>
+          {children}
+          <CartDrawer />
+        </CartProvider>
+      </body>
     </html>
   );
 }

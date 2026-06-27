@@ -114,8 +114,8 @@ export default function ProductsPage() {
                     <td data-label="الفئة">{p.category?.nameAR ?? "—"}</td>
                     <td data-label="الأحجام">
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                        {p.sizes.slice(0, 4).map((s) => <span key={s.label} className="cat-sub-chip">{s.label}</span>)}
-                        {p.sizes.length > 4 && <span className="cat-sub-chip">+{p.sizes.length - 4}</span>}
+                        {[...p.grades, ...p.weights].slice(0, 4).map((label) => <span key={label} className="cat-sub-chip">{label}</span>)}
+                        {p.grades.length + p.weights.length > 4 && <span className="cat-sub-chip">+{p.grades.length + p.weights.length - 4}</span>}
                       </div>
                     </td>
                     <td data-label="مميز" style={{ textAlign: "center" }}>

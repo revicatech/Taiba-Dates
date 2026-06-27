@@ -46,7 +46,6 @@ export type Category = {
 };
 
 export type ProductSizeImage = { url: string; publicId: string };
-export type ProductSize = { label: string };
 
 export type Product = {
   _id: string;
@@ -58,7 +57,8 @@ export type Product = {
   featured: boolean;
   soldOut: boolean;
   features: string[];
-  sizes: ProductSize[];
+  grades: string[];
+  weights: string[];
   subCategoryIds: string[];
   images: ProductSizeImage[];
   sellByPiece: boolean;

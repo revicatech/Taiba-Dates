@@ -18,7 +18,10 @@ export interface IProduct extends Document {
   featured: boolean;
   soldOut: boolean;
   features: string[];
+  /** @deprecated legacy weight labels — kept only so old docs migrate into `weights`. */
   sizes: IProductSize[];
+  grades: string[];   // الأحجام / الأصناف, e.g. جامبو (optional)
+  weights: string[];  // الأوزان, e.g. 500g, 800g (optional)
   subCategoryIds: string[];
   images: IProductImage[];
   sellByPiece: boolean;
@@ -45,7 +48,10 @@ const productSchema = new Schema<IProduct>(
     featured: { type: Boolean, default: false },
     soldOut: { type: Boolean, default: false, index: true },
     features: { type: [String], default: [] },
+    // `sizes` is the legacy weight field; kept so existing docs still migrate into `weights`.
     sizes: { type: [productSizeSchema], default: [] },
+    grades: { type: [String], default: [] },
+    weights: { type: [String], default: [] },
     subCategoryIds: { type: [String], default: [] },
     images: { type: [productImageSchema], default: [] },
     sellByPiece: { type: Boolean, default: true },

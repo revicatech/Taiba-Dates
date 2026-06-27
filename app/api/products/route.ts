@@ -44,7 +44,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const featured = formData.get("featured") === "true";
     const soldOut = formData.get("soldOut") === "true";
     const featuresRaw = (formData.get("features") as string | null) ?? "[]";
-    const sizesRaw = (formData.get("sizes") as string | null) ?? "[]";
 
     if (!nameAR || !category) {
       return NextResponse.json({ message: "nameAR and category are required" }, { status: 400 });
@@ -65,8 +64,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     }
 
-    const sizesData: { label: string }[] = JSON.parse(sizesRaw);
     const features: string[] = JSON.parse(featuresRaw);
+    const grades: string[] = JSON.parse((formData.get("grades") as string | null) ?? "[]")
+      .map((s: unknown) => String(s).trim()).filter(Boolean);
+    const weights: string[] = JSON.parse((formData.get("weights") as string | null) ?? "[]")
+      .map((s: unknown) => String(s).trim()).filter(Boolean);
     const subCategoryIds: string[] = JSON.parse((formData.get("subCategoryIds") as string | null) ?? "[]");
     const sellByPiece = formData.get("sellByPiece") !== "false";
     const boxQuantities: number[] = JSON.parse((formData.get("boxQuantities") as string | null) ?? "[]")
@@ -83,8 +85,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       images.push({ url, publicId });
       imgIdx++;
     }
-    const sizes = sizesData.filter((s) => s.label).map((s) => ({ label: s.label }));
-    const product = await Product.create({ nameAR, nameEN, category, description, fullDescription, featured, soldOut, features, sizes, subCategoryIds, images, sellByPiece, boxQuantities });
+    const product = await Product.create({ nameAR, nameEN, category, description, fullDescription, featured, soldOut, features, grades, weights, subCategoryIds, images, sellByPiece, boxQuantities });
     await product.populate("category");
     return NextResponse.json(product, { status: 201 });
   } catch (err) {

@@ -43,13 +43,16 @@ export default async function OtherProducts() {
                       const subCats = (p.subCategoryIds ?? [])
                         .map((id) => p.category?.subCategories?.find((s) => s._id === id))
                         .filter(Boolean) as { _id: string; nameAR: string }[];
-                      return (subCats.length > 0 || p.sizes.length > 0) ? (
+                      return (subCats.length > 0 || p.grades.length > 0 || p.weights.length > 0) ? (
                         <div className="product-weights">
                           {subCats.map((s) => (
                             <span key={s._id} className="subcat-pill">{s.nameAR}</span>
                           ))}
-                          {p.sizes.map((s) => (
-                            <span key={s.label} className="weight-pill">{s.label}</span>
+                          {p.grades.map((g) => (
+                            <span key={g} className="weight-pill">{g}</span>
+                          ))}
+                          {p.weights.map((w) => (
+                            <span key={w} className="weight-pill">{w}</span>
                           ))}
                         </div>
                       ) : null;

@@ -15,7 +15,14 @@ export async function GET(_req: NextRequest, { params }: Ctx): Promise<NextRespo
     await connectDB();
     const product = await Product.findById(id).populate("category");
     if (!product) return NextResponse.json({ message: "Product not found" }, { status: 404 });
-    return NextResponse.json(product);
+    // Migrate legacy `sizes` (weights) into `weights` so the edit form shows them.
+    const obj = product.toObject();
+    if ((!obj.weights || obj.weights.length === 0) && Array.isArray(obj.sizes) && obj.sizes.length > 0) {
+      obj.weights = (obj.sizes as { label?: string }[])
+        .map((s) => s.label)
+        .filter((l): l is string => Boolean(l));
+    }
+    return NextResponse.json(obj);
   } catch (err) {
     return handleApiError(err);
   }
@@ -36,7 +43,8 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
     const featured = formData.get("featured");
     const soldOut = formData.get("soldOut");
     const featuresRaw = formData.get("features") as string | null;
-    const sizesRaw = formData.get("sizes") as string | null;
+    const gradesRaw = formData.get("grades") as string | null;
+    const weightsRaw = formData.get("weights") as string | null;
     const subCategoryIdsRaw = formData.get("subCategoryIds") as string | null;
     const keptImagesRaw = formData.get("keptImages") as string | null;
     const sellByPiece = formData.get("sellByPiece");
@@ -69,9 +77,13 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
       update.category = category;
     }
 
-    if (sizesRaw !== null) {
-      const sizesData: { label: string }[] = JSON.parse(sizesRaw);
-      update.sizes = sizesData.filter((s) => s.label).map((s) => ({ label: s.label }));
+    if (gradesRaw !== null) {
+      update.grades = JSON.parse(gradesRaw).map((s: unknown) => String(s).trim()).filter(Boolean);
+    }
+    if (weightsRaw !== null) {
+      update.weights = JSON.parse(weightsRaw).map((s: unknown) => String(s).trim()).filter(Boolean);
+      // Clear the legacy field so it can't shadow the new weights on read.
+      update.sizes = [];
     }
 
     if (keptImagesRaw !== null) {
