@@ -35,6 +35,7 @@ export default function ProductForm({ mode, initial }: Props) {
   const [weights, setWeights] = useState<string[]>(initial?.weights ?? []);
   const [weightInput, setWeightInput] = useState("");
   const [sellByPiece, setSellByPiece] = useState(initial?.sellByPiece ?? true);
+  const [boxEnabled, setBoxEnabled] = useState((initial?.boxQuantities?.length ?? 0) > 0);
   const [boxQuantities, setBoxQuantities] = useState<number[]>(initial?.boxQuantities ?? []);
   const [boxInput, setBoxInput] = useState("");
   const [keptImages, setKeptImages] = useState<{ url: string; publicId: string }[]>(initial?.images ?? []);
@@ -89,6 +90,12 @@ export default function ProductForm({ mode, initial }: Props) {
     setWeights((prev) => prev.filter((w) => w !== label));
   }
   const customWeights = weights.filter((w) => !PRESET_WEIGHTS.some((p) => norm(p) === norm(w)));
+
+  // Box is off by default (product sold by piece). Turning it off clears the quantities.
+  function toggleBoxEnabled(on: boolean) {
+    setBoxEnabled(on);
+    if (!on) setBoxQuantities([]);
+  }
 
   function toggleBox(qty: number) {
     setBoxQuantities((prev) =>
@@ -354,55 +361,65 @@ export default function ProductForm({ mode, initial }: Props) {
               <span className="pf-section-sub">مفرد وجملة</span>
             </div>
 
-            <label className="pf-checkbox-label" style={{ marginBottom: 12 }}>
+            <label className="pf-checkbox-label" style={{ marginBottom: 10 }}>
               <input type="checkbox" className="pf-checkbox" checked={sellByPiece} onChange={(e) => setSellByPiece(e.target.checked)} />
               <span>يُباع بالحبة (مفرق)</span>
             </label>
 
-            <label className="pf-label-sm" style={{ display: "block", marginBottom: 6 }}>
-              الصناديق (جملة) — عدد القطع في الصندوق
+            {/* Box toggle — off by default; turning it on reveals the box info below */}
+            <label className="pf-checkbox-label" style={{ marginBottom: boxEnabled ? 14 : 0 }}>
+              <input type="checkbox" className="pf-checkbox" checked={boxEnabled} onChange={(e) => toggleBoxEnabled(e.target.checked)} />
+              <span>يُباع بالصندوق (جملة)</span>
             </label>
 
-            {/* Preset box quantities (always shown) */}
-            <div className="pf-size-presets">
-              {PRESET_BOXES.map((qty) => (
-                <button
-                  key={qty}
-                  type="button"
-                  className={`pf-size-chip${boxQuantities.includes(qty) ? " pf-size-chip-on" : ""}`}
-                  onClick={() => toggleBox(qty)}
-                >
-                  صندوق {qty} قطعة
-                </button>
-              ))}
-            </div>
+            {boxEnabled && (
+              <>
+                <label className="pf-label-sm" style={{ display: "block", marginBottom: 6 }}>
+                  عدد القطع في الصندوق
+                </label>
 
-            {/* Custom box quantities */}
-            {customBoxes.length > 0 && (
-              <div className="pf-size-customs">
-                {customBoxes.map((qty) => (
-                  <span key={qty} className="pf-size-chip pf-size-chip-on pf-size-chip-custom">
-                    صندوق {qty} قطعة
-                    <button type="button" onClick={() => toggleBox(qty)} title="حذف">×</button>
-                  </span>
-                ))}
-              </div>
+                {/* Preset box quantities */}
+                <div className="pf-size-presets">
+                  {PRESET_BOXES.map((qty) => (
+                    <button
+                      key={qty}
+                      type="button"
+                      className={`pf-size-chip${boxQuantities.includes(qty) ? " pf-size-chip-on" : ""}`}
+                      onClick={() => toggleBox(qty)}
+                    >
+                      صندوق {qty} قطعة
+                    </button>
+                  ))}
+                </div>
+
+                {/* Custom box quantities */}
+                {customBoxes.length > 0 && (
+                  <div className="pf-size-customs">
+                    {customBoxes.map((qty) => (
+                      <span key={qty} className="pf-size-chip pf-size-chip-on pf-size-chip-custom">
+                        صندوق {qty} قطعة
+                        <button type="button" onClick={() => toggleBox(qty)} title="حذف">×</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add a custom box quantity */}
+                <div className="pf-tag-row">
+                  <input
+                    className="pf-input pf-input-sm"
+                    value={boxInput}
+                    onChange={(e) => setBoxInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomBox(); } }}
+                    placeholder="عدد مخصص — مثال: 12"
+                    type="number"
+                    min={1}
+                    dir="ltr"
+                  />
+                  <button type="button" className="pf-btn-secondary" onClick={addCustomBox}>إضافة</button>
+                </div>
+              </>
             )}
-
-            {/* Add a custom box quantity */}
-            <div className="pf-tag-row">
-              <input
-                className="pf-input pf-input-sm"
-                value={boxInput}
-                onChange={(e) => setBoxInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomBox(); } }}
-                placeholder="عدد مخصص — مثال: 12"
-                type="number"
-                min={1}
-                dir="ltr"
-              />
-              <button type="button" className="pf-btn-secondary" onClick={addCustomBox}>إضافة</button>
-            </div>
           </div>
 
           {/* Images */}
