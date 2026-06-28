@@ -9,6 +9,7 @@ import Logo from "@/components/Logo";
 const navItems = [
   { href: "/admin/products", label: "المنتجات", icon: "🌴" },
   { href: "/admin/categories", label: "الفئات", icon: "✨" },
+  { href: "/admin/settings", label: "الإعدادات", icon: "⚙️" },
 ];
 
 export default function AdminShell({ children }: { children: ReactNode }) {

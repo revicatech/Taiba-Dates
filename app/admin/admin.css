@@ -446,6 +446,63 @@
   content: '⚠';
   font-size: 16px;
 }
+.admin-alert-success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+/* ============ SETTINGS PAGE ============ */
+.admin-settings-card {
+  background: var(--color-surface);
+  border-radius: 16px;
+  border: 1px solid rgba(244, 175, 46, 0.15);
+  padding: 32px;
+  max-width: 480px;
+}
+.admin-settings-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 24px;
+}
+.admin-settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.admin-settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.admin-settings-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+.admin-settings-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.admin-settings-input-wrap .admin-input {
+  width: 100%;
+  padding-left: 44px;
+}
+.admin-settings-eye {
+  position: absolute;
+  left: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px;
+  color: var(--color-text-muted);
+  transition: opacity 150ms;
+}
+.admin-settings-eye:hover { opacity: 0.7; }
 .admin-empty {
   text-align: center;
   padding: 64px 24px;
