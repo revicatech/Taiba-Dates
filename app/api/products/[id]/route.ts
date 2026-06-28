@@ -49,6 +49,7 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
     const keptImagesRaw = formData.get("keptImages") as string | null;
     const sellByPiece = formData.get("sellByPiece");
     const boxQuantitiesRaw = formData.get("boxQuantities") as string | null;
+    const variantsRaw = formData.get("variants") as string | null;
 
     if (nameAR !== null) update.nameAR = nameAR;
     if (nameEN !== null) update.nameEN = nameEN;
@@ -63,6 +64,10 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
       update.boxQuantities = JSON.parse(boxQuantitiesRaw)
         .map((n: unknown) => Number(n))
         .filter((n: number) => Number.isFinite(n) && n > 0);
+    }
+    if (variantsRaw !== null) {
+      update.variants = (JSON.parse(variantsRaw) as { grade?: string; weight?: string }[])
+        .map((v) => ({ grade: String(v.grade ?? "").trim(), weight: String(v.weight ?? "").trim() }));
     }
 
     if (category !== null) {

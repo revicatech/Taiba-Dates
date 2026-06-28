@@ -46,6 +46,12 @@ export default function ProductForm({ mode, initial }: Props) {
   const [boxEnabled, setBoxEnabled] = useState((initial?.boxQuantities?.length ?? 0) > 0);
   const [boxQuantities, setBoxQuantities] = useState<number[]>(initial?.boxQuantities ?? []);
   const [boxInput, setBoxInput] = useState("");
+  const [variantRows, setVariantRows] = useState<{ grade: string; weight: string }[]>(
+    (initial?.variants ?? []).map((v) => ({ grade: v.grade ?? "", weight: v.weight ?? "" }))
+  );
+  const [addingVariant, setAddingVariant] = useState(false);
+  const [variantGrade, setVariantGrade] = useState("");
+  const [variantWeight, setVariantWeight] = useState("");
   const [keptImages, setKeptImages] = useState<{ url: string; publicId: string }[]>(initial?.images ?? []);
   const [newFiles, setNewFiles] = useState<PendingFile[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -122,6 +128,21 @@ export default function ProductForm({ mode, initial }: Props) {
   // Custom box quantities the admin added beyond the presets — removable chips.
   const customBoxes = boxQuantities.filter((n) => !PRESET_BOXES.includes(n));
 
+  function addVariantRow() {
+    const g = variantGrade.trim();
+    const w = variantWeight.trim();
+    if (!g && !w) return;
+    if (variantRows.some((v) => v.grade === g && v.weight === w)) return;
+    setVariantRows((prev) => [...prev, { grade: g, weight: w }]);
+    setVariantGrade("");
+    setVariantWeight("");
+    setAddingVariant(false);
+  }
+
+  function removeVariantRow(idx: number) {
+    setVariantRows((prev) => prev.filter((_, i) => i !== idx));
+  }
+
   function addFiles(files: FileList | null) {
     if (!files) return;
     const added: PendingFile[] = Array.from(files).map((file) => ({
@@ -176,6 +197,7 @@ export default function ProductForm({ mode, initial }: Props) {
     form.append("weights", JSON.stringify(weights));
     form.append("sellByPiece", String(sellByPiece));
     form.append("boxQuantities", JSON.stringify(boxQuantities));
+    form.append("variants", JSON.stringify(variantRows));
 
     if (mode === "edit") {
       form.append("keptImages", JSON.stringify(keptImages));
@@ -452,6 +474,64 @@ export default function ProductForm({ mode, initial }: Props) {
                   <button type="button" className="pf-btn-secondary" onClick={addCustomBox}>إضافة</button>
                 </div>
               </>
+            )}
+          </div>
+
+          {/* Explicit variant combos (optional) */}
+          <div className="pf-panel">
+            <div className="pf-panel-title">
+              متغيرات المنتج
+              <span className="pf-section-sub">اختياري</span>
+            </div>
+            <p className="pf-hint">اتركه فارغاً لاستخدام كل توليفات الأصناف والأوزان تلقائياً. أضف توليفات محددة فقط إذا أردت تقييد الاختيارات المتاحة.</p>
+
+            {variantRows.length > 0 && (
+              <div className="pf-variant-list">
+                {variantRows.map((v, i) => (
+                  <div key={i} className="pf-variant-row">
+                    <span className="pf-variant-label">{v.grade || "—"}</span>
+                    <span className="pf-variant-sep">+</span>
+                    <span className="pf-variant-label" dir="ltr">{v.weight || "—"}</span>
+                    <button type="button" className="pf-variant-remove" onClick={() => removeVariantRow(i)} title="حذف">×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {addingVariant ? (
+              <div className="pf-variant-form">
+                <input
+                  list="vf-grade-list"
+                  className="pf-input pf-input-sm"
+                  value={variantGrade}
+                  onChange={(e) => setVariantGrade(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addVariantRow(); } }}
+                  placeholder="الصنف — مثال: جامبو"
+                />
+                <datalist id="vf-grade-list">
+                  {grades.map((g) => <option key={g} value={g} />)}
+                </datalist>
+                <input
+                  list="vf-weight-list"
+                  className="pf-input pf-input-sm"
+                  value={variantWeight}
+                  onChange={(e) => setVariantWeight(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addVariantRow(); } }}
+                  placeholder="الوزن — مثال: 500 g"
+                  dir="ltr"
+                />
+                <datalist id="vf-weight-list">
+                  {weights.map((w) => <option key={w} value={w} />)}
+                </datalist>
+                <div className="pf-tag-row">
+                  <button type="button" className="pf-btn-secondary" onClick={addVariantRow}>إضافة</button>
+                  <button type="button" className="pf-btn-ghost" onClick={() => { setAddingVariant(false); setVariantGrade(""); setVariantWeight(""); }}>إلغاء</button>
+                </div>
+              </div>
+            ) : (
+              <button type="button" className="pf-btn-secondary" onClick={() => setAddingVariant(true)}>
+                + إضافة توليفة
+              </button>
             )}
           </div>
 

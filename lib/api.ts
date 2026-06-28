@@ -47,6 +47,9 @@ export type Category = {
 
 export type ProductSizeImage = { url: string; publicId: string };
 
+/** Grade×weight combo stored on a product. Empty array = cross-product of grades×weights assumed valid. */
+export type StoredVariant = { grade?: string; weight?: string };
+
 export type Product = {
   _id: string;
   nameAR: string;
@@ -63,6 +66,7 @@ export type Product = {
   images: ProductSizeImage[];
   sellByPiece: boolean;
   boxQuantities: number[];
+  variants: StoredVariant[];
 };
 
 export type Paginated<T> = { items: T[]; page: number; limit: number; total: number; pages: number };

@@ -1456,6 +1456,58 @@
 }
 .pf-btn-secondary:hover { border-color: var(--color-primary); background: rgba(244,175,46,0.06); }
 
+.pf-btn-ghost {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.12);
+  font-family: var(--font-arabic);
+  font-size: 13px;
+  color: #888;
+  cursor: pointer;
+  transition: border-color 180ms;
+}
+.pf-btn-ghost:hover { border-color: rgba(0,0,0,0.3); color: #555; }
+
+/* Variant builder */
+.pf-variant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.pf-variant-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(47, 74, 56, 0.05);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.pf-variant-label {
+  font-weight: 600;
+  color: #2F4A38;
+}
+.pf-variant-sep { color: #bbb; font-size: 11px; }
+.pf-variant-remove {
+  margin-right: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #d44;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 4px;
+  transition: color 150ms;
+}
+.pf-variant-remove:hover { color: #b00; }
+.pf-variant-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 /* Featured counter bar */
 .admin-featured-counter {
   display: flex;

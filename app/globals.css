@@ -2186,6 +2186,27 @@ footer {
   color: #fff;
   box-shadow: 0 4px 14px rgba(224, 165, 46, 0.45);
 }
+.pdv2-chip-disabled,
+.pdv2-chip:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+  border-color: rgba(47, 74, 56, 0.2);
+  color: rgba(47, 74, 56, 0.45);
+  pointer-events: none;
+}
+
+/* Cascading step rows — fade in when unlocked */
+@keyframes pdv2-step-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.pdv2-step { display: none; }
+.pdv2-step-visible {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: pdv2-step-in 260ms ease forwards;
+}
 
 /* WhatsApp button */
 .pdv2-wa-btn {
@@ -2329,6 +2350,16 @@ footer {
 .pdv2-cart-btn:hover {
   background: rgba(244, 175, 46, 0.1);
   box-shadow: var(--shadow-golden);
+}
+.pdv2-cart-btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.pdv2-wa-btn-disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* ============ UNIT FILTER (box / piece) ============ */

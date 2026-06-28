@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 import ProductDetailClient from "@/components/ProductDetailClient";
-import { fetchProductById } from "@/data/products";
+import { fetchProductById, deriveVariants } from "@/data/products";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -25,6 +25,7 @@ export default async function ProductDetailPage({ params }: Props) {
   if (!product) notFound();
 
   const subCategories = product.category?.subCategories ?? [];
+  const effectiveVariants = deriveVariants(product);
 
   return (
     <>
@@ -50,13 +51,10 @@ export default async function ProductDetailPage({ params }: Props) {
             categoryNameAR={product.category?.nameAR ?? ""}
             categoryNameEN={product.category?.nameEN ?? ""}
             features={product.features}
-            grades={product.grades}
-            weights={product.weights}
+            variants={effectiveVariants}
             subCategoryIds={product.subCategoryIds}
             subCategories={subCategories}
             images={product.images}
-            sellByPiece={product.sellByPiece}
-            boxQuantities={product.boxQuantities}
           />
 
         </div>

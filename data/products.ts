@@ -21,6 +21,17 @@ export type Category = { _id: string; nameEN: string; nameAR: string; isDates?: 
 
 export type ProductSizeImage = { url: string; publicId: string };
 
+/** Grade×weight combo stored on a product. Empty array = all cross-product combos are valid. */
+export type StoredVariant = { grade?: string; weight?: string };
+
+/** Resolved variant with packaging included — passed to the public product detail page. */
+export type EffectiveVariant = {
+  grade?: string;
+  weight?: string;
+  sellByPiece: boolean;
+  boxQuantities: number[];
+};
+
 export type Product = {
   _id: string;
   nameAR: string;
@@ -37,6 +48,7 @@ export type Product = {
   images: ProductSizeImage[];
   sellByPiece: boolean;
   boxQuantities: number[];
+  variants: StoredVariant[];
 };
 
 function mapProduct(d: Record<string, unknown>): Product {
@@ -93,6 +105,12 @@ function mapProduct(d: Record<string, unknown>): Product {
     }
   }
 
+  const rawVariants = ((d.variants as { grade?: string; weight?: string }[]) ?? []);
+  const variants: StoredVariant[] = rawVariants.map((v) => ({
+    grade: v.grade || undefined,
+    weight: v.weight || undefined,
+  }));
+
   return {
     _id: String(d._id),
     nameAR,
@@ -119,7 +137,43 @@ function mapProduct(d: Record<string, unknown>): Product {
     images,
     sellByPiece: d.sellByPiece !== false,
     boxQuantities: ((d.boxQuantities as number[]) ?? []).filter((n) => Number.isFinite(n) && n > 0),
+    variants,
   };
+}
+
+/**
+ * Derives the effective selectable variants for a product's detail page.
+ * If the product has explicit `variants` (grade×weight combos), those are used with
+ * the product's global packaging. Otherwise falls back to the cross-product of all
+ * grades×weights (backward-compatible for products created before variants were added).
+ */
+export function deriveVariants(product: {
+  variants: StoredVariant[];
+  grades: string[];
+  weights: string[];
+  sellByPiece: boolean;
+  boxQuantities: number[];
+}): EffectiveVariant[] {
+  const pkg = { sellByPiece: product.sellByPiece, boxQuantities: product.boxQuantities };
+
+  if (product.variants.length > 0) {
+    return product.variants.map((v) => ({
+      grade: v.grade || undefined,
+      weight: v.weight || undefined,
+      ...pkg,
+    }));
+  }
+
+  const { grades, weights } = product;
+  if (!grades.length && !weights.length) return [{ ...pkg }];
+  if (!grades.length) return weights.map((w) => ({ weight: w, ...pkg }));
+  if (!weights.length) return grades.map((g) => ({ grade: g, ...pkg }));
+
+  const result: EffectiveVariant[] = [];
+  for (const g of grades) {
+    for (const w of weights) result.push({ grade: g, weight: w, ...pkg });
+  }
+  return result;
 }
 
 type FetchProductsOptions = {

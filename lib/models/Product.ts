@@ -9,6 +9,11 @@ export interface IProductSize {
   label: string;
 }
 
+export interface IProductVariant {
+  grade: string;
+  weight: string;
+}
+
 export interface IProduct extends Document {
   nameAR: string;
   nameEN?: string;
@@ -26,6 +31,8 @@ export interface IProduct extends Document {
   images: IProductImage[];
   sellByPiece: boolean;
   boxQuantities: number[];
+  /** Optional explicit grade×weight combos. Empty = cross-product of grades×weights is assumed valid. */
+  variants: IProductVariant[];
 }
 
 const productImageSchema = new Schema<IProductImage>(
@@ -35,6 +42,14 @@ const productImageSchema = new Schema<IProductImage>(
 
 const productSizeSchema = new Schema<IProductSize>(
   { label: { type: String, required: true, trim: true } },
+  { _id: false }
+);
+
+const productVariantSchema = new Schema<IProductVariant>(
+  {
+    grade: { type: String, default: "" },
+    weight: { type: String, default: "" },
+  },
   { _id: false }
 );
 
@@ -56,6 +71,7 @@ const productSchema = new Schema<IProduct>(
     images: { type: [productImageSchema], default: [] },
     sellByPiece: { type: Boolean, default: true },
     boxQuantities: { type: [Number], default: [] },
+    variants: { type: [productVariantSchema], default: [] },
   },
   { timestamps: true }
 );
