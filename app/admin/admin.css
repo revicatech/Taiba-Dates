@@ -503,6 +503,12 @@
   transition: opacity 150ms;
 }
 .admin-settings-eye:hover { opacity: 0.7; }
+.admin-settings-form .admin-btn {
+  padding: 16px 32px;
+  font-size: 15px;
+  border-radius: 10px;
+  align-self: flex-start;
+}
 .admin-empty {
   text-align: center;
   padding: 64px 24px;

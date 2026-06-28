@@ -141,7 +141,7 @@ export default function SettingsPage() {
 
           <button
             type="submit"
-            className="admin-btn-primary"
+            className="admin-btn admin-btn-primary"
             disabled={loading}
           >
             {loading ? "جاري الحفظ..." : "حفظ كلمة السر"}
