@@ -25,7 +25,6 @@ type Props = {
   categoryNameAR: string;
   categoryNameEN: string;
   features: string[];
-  /** Effective variants — pre-derived on the server via deriveVariants(). */
   variants: EffectiveVariant[];
   subCategoryIds: string[];
   subCategories: SubCategory[];
@@ -56,40 +55,43 @@ export default function ProductDetailClient({
   // ── Cascading selector state ──
   const [selectedSubId, setSelectedSubId] = useState<string | null>(subCategoryIds[0] ?? null);
   const [selectedGrade, setSelectedGrade] = useState<string | null>(null);
-  const [selectedWeight, setSelectedWeight] = useState<string | null>(null);
+  // Weights are MULTI-SELECT: customer can pick several weights at once.
+  const [selectedWeights, setSelectedWeights] = useState<string[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
 
-  // Derive all unique grades/weights that exist across ALL variants.
+  // Unique grades / weights across all variants.
   const allGrades = [...new Set(variants.flatMap((v) => (v.grade ? [v.grade] : [])))];
   const allWeights = [...new Set(variants.flatMap((v) => (v.weight ? [v.weight] : [])))];
   const hasGradeStep = allGrades.length > 0;
   const hasWeightStep = allWeights.length > 0;
 
-  // Weights that are valid given the current grade selection.
+  // Weights valid for the currently selected grade.
   const validWeightsForGrade = hasGradeStep && selectedGrade !== null
     ? [...new Set(variants
         .filter((v) => !v.grade || v.grade === selectedGrade)
         .flatMap((v) => (v.weight ? [v.weight] : [])))]
     : allWeights;
 
-  // Step unlock chain: grade → weight → unit.
+  // Step unlock chain: grade → weight(s) → unit.
   const weightStepVisible = !hasGradeStep || selectedGrade !== null;
-  const unitStepVisible = weightStepVisible && (!hasWeightStep || selectedWeight !== null);
+  const weightStepSatisfied = !hasWeightStep || selectedWeights.length > 0;
+  const unitStepVisible = weightStepVisible && weightStepSatisfied;
 
-  // Resolved variant (exact match for current grade+weight selection).
+  // Resolve packaging from the first selected weight (packaging is product-global).
+  const primaryWeight = selectedWeights[0] ?? null;
   const resolvedVariant: EffectiveVariant | null = unitStepVisible
     ? (variants.find((v) =>
         (!hasGradeStep || !v.grade || v.grade === selectedGrade) &&
-        (!hasWeightStep || !v.weight || v.weight === selectedWeight)
+        (!hasWeightStep || !v.weight || v.weight === primaryWeight)
       ) ?? null)
     : null;
 
-  // Unit options available for the resolved variant.
+  // Unit options from the resolved variant (packaging is shared across weights).
   const unitOptions: UnitOption[] = resolvedVariant
     ? buildUnitOptions(resolvedVariant.sellByPiece, resolvedVariant.boxQuantities)
     : [];
 
-  // All possible unit options across every variant (for showing disabled chips).
+  // All unit options across every variant (for showing disabled chips).
   const allUnitOptions: UnitOption[] = (() => {
     const map = new Map<string, UnitOption>();
     for (const v of variants) {
@@ -100,10 +102,9 @@ export default function ProductDetailClient({
     return [...map.values()];
   })();
 
-  // Unit step is only shown when there are multiple packaging options globally.
   const hasUnitStep = allUnitOptions.length > 1;
 
-  // Auto-select the only unit when there is no choice to make.
+  // Auto-select the only unit when there is no meaningful choice.
   useEffect(() => {
     if (!hasUnitStep && unitOptions.length > 0) {
       setSelectedUnit(unitOptions[0].key);
@@ -112,31 +113,33 @@ export default function ProductDetailClient({
     }
   }, [hasUnitStep, unitOptions.map((u) => u.key).join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Full selection is complete when all required steps have a value and the variant resolved.
   const isComplete =
     resolvedVariant !== null &&
+    (!hasWeightStep || selectedWeights.length > 0) &&
     (unitOptions.length === 0 || selectedUnit !== null);
 
-  // ── Grade/weight/unit handlers (cascade resets downstream) ──
+  // ── Handlers ──
   function handleGradeSelect(grade: string) {
     const next = selectedGrade === grade ? null : grade;
     setSelectedGrade(next);
-    // Reset weight if it's no longer valid for the new grade.
-    if (next !== null && selectedWeight !== null) {
+    // Keep only weights still valid for the new grade; clear all if grade cleared.
+    if (next !== null) {
       const validW = [...new Set(variants
         .filter((v) => !v.grade || v.grade === next)
         .flatMap((v) => (v.weight ? [v.weight] : [])))];
-      if (!validW.includes(selectedWeight)) setSelectedWeight(null);
-    } else if (next === null) {
-      setSelectedWeight(null);
+      setSelectedWeights((prev) => prev.filter((w) => validW.includes(w)));
+    } else {
+      setSelectedWeights([]);
     }
     setSelectedUnit(null);
   }
 
-  function handleWeightSelect(weight: string) {
+  function handleWeightToggle(weight: string) {
     if (!weightStepVisible || !validWeightsForGrade.includes(weight)) return;
-    setSelectedWeight(selectedWeight === weight ? null : weight);
-    setSelectedUnit(null);
+    // Toggle weight on/off — does NOT reset unit (unit options are product-global).
+    setSelectedWeights((prev) =>
+      prev.includes(weight) ? prev.filter((w) => w !== weight) : [...prev, weight]
+    );
   }
 
   function handleUnitSelect(key: string) {
@@ -144,7 +147,7 @@ export default function ProductDetailClient({
     setSelectedUnit(selectedUnit === key ? null : key);
   }
 
-  // ── Subcategory display (for WhatsApp / cart labelling) ──
+  // ── Subcategory / order labels ──
   const resolvedSubCats = subCategoryIds
     .map((id) => subCategories.find((s) => s._id === id))
     .filter(Boolean) as SubCategory[];
@@ -157,7 +160,36 @@ export default function ProductDetailClient({
     : undefined;
   const gradeForOrder = [subName, selectedGrade].filter(Boolean).join(" - ") || undefined;
 
-  // ── Image slider ──
+  // ── WhatsApp: one line per selected weight ──
+  function buildWA() {
+    const wts = selectedWeights.length > 0 ? selectedWeights : [undefined as string | undefined];
+    if (wts.length === 1) {
+      const line = orderLine({ name: nameAR, grade: gradeForOrder, weight: wts[0], unitLabel: unitName });
+      return waLink(`مرحباً،\nأريد طلب ${line}`);
+    }
+    const lines = wts
+      .map((w) => `  - ${orderLine({ name: nameAR, grade: gradeForOrder, weight: w, unitLabel: unitName })}`)
+      .join("\n");
+    return waLink(`مرحباً،\nأريد طلب:\n${lines}`);
+  }
+
+  // ── Cart: one item per selected weight ──
+  function addToCart() {
+    if (!isComplete) return;
+    const wts = selectedWeights.length > 0 ? selectedWeights : [undefined as string | undefined];
+    for (const w of wts) {
+      cart.addItem({
+        productId,
+        name: nameAR,
+        grade: gradeForOrder,
+        weight: w,
+        unitLabel: unitName,
+        imageUrl: images[0]?.url,
+      });
+    }
+  }
+
+  // ── Slider ──
   const goNext = useCallback(() => {
     setSlideIdx((i) => (i + 1) % Math.max(images.length, 1));
   }, [images.length]);
@@ -182,29 +214,6 @@ export default function ProductDetailClient({
     touchStartX.current = null;
   }
 
-  // ── WhatsApp / Cart ──
-  function buildWA() {
-    const line = orderLine({
-      name: nameAR,
-      grade: gradeForOrder,
-      weight: selectedWeight ?? undefined,
-      unitLabel: unitName,
-    });
-    return waLink(`مرحباً،\nأريد طلب ${line}`);
-  }
-
-  function addToCart() {
-    if (!isComplete) return;
-    cart.addItem({
-      productId,
-      name: nameAR,
-      grade: gradeForOrder,
-      weight: selectedWeight ?? undefined,
-      unitLabel: unitName,
-      imageUrl: images[0]?.url,
-    });
-  }
-
   const categoryLabel = categoryNameAR || categoryNameEN;
   const currentImage = images[slideIdx];
 
@@ -223,12 +232,7 @@ export default function ProductDetailClient({
           {currentImage
             ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={slideIdx}
-                src={currentImage.url}
-                alt={nameAR}
-                className="pdv2-img"
-              />
+              <img key={slideIdx} src={currentImage.url} alt={nameAR} className="pdv2-img" />
             )
             : <div className="pdv2-img-empty" />
           }
@@ -257,9 +261,7 @@ export default function ProductDetailClient({
         {nameEN && <p className="pdv2-title-en">{nameEN}</p>}
 
         {description && (
-          <div className="pdv2-desc">
-            <p>{description}</p>
-          </div>
+          <div className="pdv2-desc"><p>{description}</p></div>
         )}
 
         {features.length > 0 && (
@@ -293,7 +295,7 @@ export default function ProductDetailClient({
           </div>
         )}
 
-        {/* Step 1 — الحجم / الصنف */}
+        {/* Step 1 — الحجم / الصنف (single-select) */}
         {hasGradeStep && (
           <div className="pdv2-sub-section">
             <p className="pdv2-selector-label">الحجم / الصنف:</p>
@@ -312,21 +314,27 @@ export default function ProductDetailClient({
           </div>
         )}
 
-        {/* Step 2 — الوزن (fades in after grade selected, or immediately if no grades) */}
+        {/* Step 2 — الوزن (MULTI-SELECT — fades in after grade selected) */}
         {hasWeightStep && (
           <div className={`pdv2-step${weightStepVisible ? " pdv2-step-visible" : ""}`}>
-            <p className="pdv2-selector-label">الوزن:</p>
+            <p className="pdv2-selector-label">
+              الوزن:
+              {selectedWeights.length > 1 && (
+                <span className="pdv2-multi-hint"> {selectedWeights.join(" · ")}</span>
+              )}
+            </p>
             <div className="pdv2-chips">
               {allWeights.map((w) => {
                 const available = validWeightsForGrade.includes(w);
+                const active = selectedWeights.includes(w);
                 return (
                   <button
                     key={w}
                     type="button"
-                    className={`pdv2-chip${selectedWeight === w ? " pdv2-chip-active" : ""}${!available ? " pdv2-chip-disabled" : ""}`}
-                    onClick={() => handleWeightSelect(w)}
+                    className={`pdv2-chip${active ? " pdv2-chip-active" : ""}${!available ? " pdv2-chip-disabled" : ""}`}
+                    onClick={() => handleWeightToggle(w)}
                     disabled={!available}
-                    aria-disabled={!available}
+                    aria-pressed={active}
                   >
                     {w}
                   </button>
@@ -336,7 +344,7 @@ export default function ProductDetailClient({
           </div>
         )}
 
-        {/* Step 3 — طريقة البيع (fades in after weight selected) */}
+        {/* Step 3 — طريقة البيع (fades in after at least one weight selected) */}
         {hasUnitStep && (
           <div className={`pdv2-step${unitStepVisible ? " pdv2-step-visible" : ""}`}>
             <p className="pdv2-selector-label">طريقة البيع:</p>
@@ -350,7 +358,7 @@ export default function ProductDetailClient({
                     className={`pdv2-chip${selectedUnit === u.key ? " pdv2-chip-active" : ""}${!available ? " pdv2-chip-disabled" : ""}`}
                     onClick={() => handleUnitSelect(u.key)}
                     disabled={!available}
-                    aria-disabled={!available}
+                    aria-pressed={selectedUnit === u.key}
                   >
                     {u.label}
                   </button>
@@ -371,7 +379,9 @@ export default function ProductDetailClient({
               <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
             </svg>
-            أضف إلى السلة
+            {selectedWeights.length > 1
+              ? `أضف ${selectedWeights.length} أوزان للسلة`
+              : "أضف إلى السلة"}
           </button>
           {isComplete ? (
             <a href={buildWA()} target="_blank" rel="noopener noreferrer" className="pdv2-wa-btn">

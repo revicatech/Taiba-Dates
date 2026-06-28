@@ -2157,6 +2157,12 @@ footer {
   color: #2F4A38;
   letter-spacing: 0.03em;
 }
+.pdv2-multi-hint {
+  font-weight: 400;
+  font-size: 12px;
+  color: #E0A52E;
+  letter-spacing: 0;
+}
 
 .pdv2-chips {
   display: flex;
