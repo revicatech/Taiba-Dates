@@ -12,8 +12,19 @@ import { fetchCategories } from "@/data/categories";
 type Props = { searchParams: { category?: string; sub?: string; unit?: string } };
 
 export const metadata = {
-  title: "المنتجات — Tiba For Dates",
-  description: "تصفح مجموعتنا الفاخرة من أجود التمور الخليجية.",
+  title: "المنتجات",
+  description: "تصفح مجموعتنا الفاخرة من أجود التمور الخليجية — تمر سعودي، مدجول، تمر محشي وفواكه مجففة.",
+  openGraph: {
+    title: "منتجات طيبه للتمور",
+    description: "تصفح مجموعتنا الفاخرة من أجود التمور الخليجية.",
+    images: [{ url: "/assets/store.jpeg", alt: "منتجات طيبه للتمور" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "منتجات طيبه للتمور",
+    description: "أجود التمور الخليجية — تمر سعودي، مدجول، تمر محشي وفواكه مجففة.",
+    images: ["/assets/store.jpeg"],
+  },
 };
 
 export default async function ProductsPage({ searchParams }: Props) {
