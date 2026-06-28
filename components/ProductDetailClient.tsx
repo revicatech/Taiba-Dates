@@ -122,15 +122,7 @@ export default function ProductDetailClient({
   function handleGradeSelect(grade: string) {
     const next = selectedGrade === grade ? null : grade;
     setSelectedGrade(next);
-    // Keep only weights still valid for the new grade; clear all if grade cleared.
-    if (next !== null) {
-      const validW = [...new Set(variants
-        .filter((v) => !v.grade || v.grade === next)
-        .flatMap((v) => (v.weight ? [v.weight] : [])))];
-      setSelectedWeights((prev) => prev.filter((w) => validW.includes(w)));
-    } else {
-      setSelectedWeights([]);
-    }
+    setSelectedWeights([]);
     setSelectedUnit(null);
   }
 
