@@ -18,7 +18,7 @@ try {
 } catch { /* .env.local not found, rely on existing env */ }
 
 // ── CHANGE THESE ──────────────────────────────────────────────
-const NEW_USERNAME = "rscine zeinab";        // ← new username
+const NEW_USERNAME = "racine zeinab";        // ← new username
 const NEW_PASSWORD = "Rawan123456789"; // ← new password
 // ─────────────────────────────────────────────────────────────
 
