@@ -570,7 +570,7 @@ export default function ProductForm({ mode, initial }: Props) {
               <input
                 ref={fileRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
                 multiple
                 style={{ display: "none" }}
                 onChange={(e) => addFiles(e.target.files)}
