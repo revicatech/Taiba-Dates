@@ -3,22 +3,19 @@
 
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import * as dotenv from "dotenv";
-import { readFileSync } from "fs";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-// Load .env.local
-try {
-  const env = readFileSync(".env.local", "utf8");
-  dotenv.populate(process.env, Object.fromEntries(
-    env.split("\n").filter(l => l.includes("=")).map(l => {
-      const [k, ...v] = l.split("=");
-      return [k.trim(), v.join("=").trim()];
-    })
-  ));
-} catch { /* .env.local not found, rely on existing env */ }
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(scriptDir, "..");
+
+// Load environment from the project root rather than the current working directory
+dotenv.config({ path: path.join(projectRoot, ".env.local") });
+dotenv.config({ path: path.join(projectRoot, ".env") });
 
 // ── CHANGE THESE ──────────────────────────────────────────────
-const NEW_USERNAME = "rscine zeinab";        // ← new username
+const NEW_USERNAME = "racine zeinab";        // ← new username
 const NEW_PASSWORD = "Rawan123456789"; // ← new password
 // ─────────────────────────────────────────────────────────────
 

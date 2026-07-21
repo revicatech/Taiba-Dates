@@ -903,11 +903,12 @@ nav .container {
 }
 .bento-hero .bento-title { font-size: 22px; }
 .bento-desc {
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 500;
   line-height: 1.85;
-  color: rgba(255,255,255,0.50);
+  color: rgba(255,255,255,0.78);
 }
-.bento-hero .bento-desc { color: rgba(255,255,255,0.62); font-size: 15px; }
+.bento-hero .bento-desc { color: rgba(255,255,255,0.88); font-size: 16px; }
 
 @media (max-width: 900px) {
   .bento-grid {
@@ -970,8 +971,8 @@ nav .container {
   .bento-body { flex: 1; }
   .bento-title { font-size: 16px; margin-bottom: 4px; }
   .bento-hero .bento-title { font-size: 16px; }
-  .bento-desc { font-size: 13px; line-height: 1.7; }
-  .bento-hero .bento-desc { font-size: 13px; color: rgba(255,255,255,0.50); }
+  .bento-desc { font-size: 14px; line-height: 1.7; }
+  .bento-hero .bento-desc { font-size: 14px; color: rgba(255,255,255,0.78); }
 }
 
 /* ============ STATS SECTION ============ */
@@ -1165,9 +1166,9 @@ nav .container {
 .contact-icon svg { width: 22px; height: 22px; }
 .contact-card-label {
   font-family: var(--font-arabic);
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.4);
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.65);
   margin-bottom: 4px;
   line-height: 1;
 }
@@ -1185,9 +1186,9 @@ nav .container {
 .contact-card-value a:hover { text-decoration: underline; }
 .contact-card-note {
   font-family: var(--font-arabic);
-  font-size: 13px;
-  font-weight: 400;
-  color: rgba(255,255,255,0.35);
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.72);
   margin-top: 2px;
   line-height: 1.4;
 }
