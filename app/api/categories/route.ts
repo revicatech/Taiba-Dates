@@ -17,7 +17,7 @@ export async function GET(): Promise<NextResponse> {
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     await requireAdmin();
-    const { nameAR, nameEN, subCategories } = await req.json();
+    const { nameAR, nameEN, isDates, subCategories } = await req.json();
     if (!nameAR) {
       return NextResponse.json({ message: "nameAR is required" }, { status: 400 });
     }
@@ -25,6 +25,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const category = await Category.create({
       nameAR,
       nameEN: nameEN || undefined,
+      isDates: isDates !== false,
       subCategories: (subCategories || []).map((s: { nameAR: string; nameEN?: string }) => ({
         nameAR: s.nameAR,
         nameEN: s.nameEN || undefined,

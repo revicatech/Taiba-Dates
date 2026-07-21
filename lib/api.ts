@@ -41,15 +41,14 @@ export type Category = {
   _id: string;
   nameEN: string;
   nameAR: string;
+  isDates: boolean;
   subCategories: SubCategory[];  // populated on GET, may be [] if not fetched
 };
 
 export type ProductSizeImage = { url: string; publicId: string };
-export type ProductSize = {
-  subCategoryId: string;
-  label: string;
-  images: ProductSizeImage[];
-};
+
+/** Grade×weight combo stored on a product. Empty array = cross-product of grades×weights assumed valid. */
+export type StoredVariant = { grade?: string; weight?: string };
 
 export type Product = {
   _id: string;
@@ -59,8 +58,15 @@ export type Product = {
   fullDescription: string;
   category: Category;
   featured: boolean;
+  soldOut: boolean;
   features: string[];
-  sizes: ProductSize[];
+  grades: string[];
+  weights: string[];
+  subCategoryIds: string[];
+  images: ProductSizeImage[];
+  sellByPiece: boolean;
+  boxQuantities: number[];
+  variants: StoredVariant[];
 };
 
 export type Paginated<T> = { items: T[]; page: number; limit: number; total: number; pages: number };
@@ -77,9 +83,9 @@ export const authApi = {
 export const categoriesApi = {
   list: () => jsonRequest<Category[]>("/api/categories", "GET"),
   get: (id: string) => jsonRequest<Category>(`/api/categories/${id}`, "GET"),
-  create: (data: { nameAR: string; nameEN?: string; subCategories?: { nameAR: string; nameEN?: string }[] }) =>
+  create: (data: { nameAR: string; nameEN?: string; isDates?: boolean; subCategories?: { nameAR: string; nameEN?: string }[] }) =>
     jsonRequest<Category>("/api/categories", "POST", data),
-  update: (id: string, data: { nameAR?: string; nameEN?: string; subCategories?: { nameAR: string; nameEN?: string }[] }) =>
+  update: (id: string, data: { nameAR?: string; nameEN?: string; isDates?: boolean; subCategories?: { nameAR: string; nameEN?: string }[] }) =>
     jsonRequest<Category>(`/api/categories/${id}`, "PUT", data),
   remove: (id: string) => jsonRequest<void>(`/api/categories/${id}`, "DELETE"),
 };
@@ -100,4 +106,6 @@ export const productsApi = {
   remove: (id: string) => jsonRequest<void>(`/api/products/${id}`, "DELETE"),
   toggleFeatured: (id: string, featured: boolean) =>
     jsonRequest<{ featured: boolean }>(`/api/products/${id}`, "PATCH", { featured }),
+  toggleSoldOut: (id: string, soldOut: boolean) =>
+    jsonRequest<{ soldOut: boolean }>(`/api/products/${id}`, "PATCH", { soldOut }),
 };

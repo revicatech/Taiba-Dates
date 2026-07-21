@@ -22,7 +22,7 @@ export default function ProductsPageHero({ totalCount, activeCategoryName }: Pro
         <p className="page-hero-desc">
           {activeCategoryName
             ? `استعرض مجموعتنا من ${activeCategoryName} — مُختارة بعناية من أفضل المزارع.`
-            : "من المجدول الملكي إلى العجوة النبوية — كل صنف يخبر حكاية أرض وتاريخ."}
+            : "من المدجول الملكي إلى العجوة النبوية — كل صنف يخبر حكاية أرض وتاريخ."}
         </p>
         <div className="page-hero-meta">
           <span>{totalCount} {totalCount === 1 ? "منتج" : "منتجًا"}</span>

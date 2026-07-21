@@ -1,10 +1,10 @@
 import { unstable_noStore as noStore } from "next/cache";
 import RevealOnScroll from "@/components/RevealOnScroll";
-import { fetchProducts } from "@/data/products";
+import { fetchCollectionProducts } from "@/data/products";
 
 export default async function Products() {
   noStore();
-  const products = await fetchProducts({ limit: 3, featuredOnly: true });
+  const products = await fetchCollectionProducts(3);
 
   return (
     <section className="products" id="products">
@@ -14,7 +14,7 @@ export default async function Products() {
           <h2 className="section-title-ar">أجود التمور الفاخرة</h2>
           <p className="section-title-en">Premium Date Varieties</p>
           <p className="section-desc">
-            من المجدول الملكي إلى العجوة النبوية — كل صنف يخبر حكاية أرض وتاريخ.
+            من المدجول الملكي إلى العجوة النبوية — كل صنف يخبر حكاية أرض وتاريخ.
           </p>
         </RevealOnScroll>
 
@@ -25,7 +25,7 @@ export default async function Products() {
         ) : (
           <div className="products-grid">
             {products.map((p, i) => {
-              const coverImage = p.sizes[0]?.images[0]?.url ?? "";
+              const coverImage = p.images[0]?.url ?? "";
               return (
                 <RevealOnScroll key={p._id} style={{ transitionDelay: `${(i % 3) * 100}ms` }}>
                   <a href={`/products/${p._id}`} className="product-card" style={{ textDecoration: "none", display: "block" }}>
@@ -41,13 +41,24 @@ export default async function Products() {
                       )}
                       <div className="product-name-ar">{p.nameAR}</div>
                       {p.nameEN && <div className="product-name-en">{p.nameEN}</div>}
-                      {p.sizes.length > 0 && (
-                        <div className="product-weights">
-                          {p.sizes.map((s) => (
-                            <span key={s.label} className="weight-pill">{s.label}</span>
-                          ))}
-                        </div>
-                      )}
+                      {(() => {
+                        const subCats = (p.subCategoryIds ?? [])
+                          .map((id) => p.category?.subCategories?.find((s) => s._id === id))
+                          .filter(Boolean) as { _id: string; nameAR: string }[];
+                        return (subCats.length > 0 || p.grades.length > 0 || p.weights.length > 0) ? (
+                          <div className="product-weights">
+                            {subCats.map((s) => (
+                              <span key={s._id} className="subcat-pill">{s.nameAR}</span>
+                            ))}
+                            {p.grades.map((g) => (
+                              <span key={g} className="weight-pill">{g}</span>
+                            ))}
+                            {p.weights.map((w) => (
+                              <span key={w} className="weight-pill">{w}</span>
+                            ))}
+                          </div>
+                        ) : null;
+                      })()}
                       <div className="product-footer">
                         <span className="product-btn">عرض المنتج ←</span>
                       </div>

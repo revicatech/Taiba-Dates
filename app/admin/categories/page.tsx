@@ -15,6 +15,7 @@ export default function CategoriesPage() {
 
   const [nameAR, setNameAR] = useState("");
   const [nameEN, setNameEN] = useState("");
+  const [isDates, setIsDates] = useState(true);
   const [subs, setSubs] = useState<SubInput[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -40,8 +41,8 @@ export default function CategoriesPage() {
     if (invalidSub) { setFormError("يرجى إدخال اسم عربي لكل تصنيف فرعي"); return; }
     setSubmitting(true);
     try {
-      await categoriesApi.create({ nameAR, nameEN, subCategories: subs.map((s) => ({ nameAR: s.nameAR, nameEN: s.nameEN })) });
-      setNameAR(""); setNameEN(""); setSubs([]);
+      await categoriesApi.create({ nameAR, nameEN, isDates, subCategories: subs.map((s) => ({ nameAR: s.nameAR, nameEN: s.nameEN })) });
+      setNameAR(""); setNameEN(""); setIsDates(true); setSubs([]);
       await refresh();
     } catch (err) { setFormError(err instanceof ApiError ? err.message : "فشل الإنشاء"); }
     finally { setSubmitting(false); }
@@ -75,6 +76,19 @@ export default function CategoriesPage() {
             <label htmlFor="nameEN">English name <span style={{ fontWeight: 400, fontSize: 12 }}>(optional)</span></label>
             <input id="nameEN" className="admin-input" value={nameEN} onChange={(e) => setNameEN(e.target.value)} placeholder="e.g. Medjool Dates" dir="ltr" />
           </div>
+        </div>
+
+        {/* Dates vs Other Products */}
+        <div className="admin-form-row">
+          <label className="cat-type-toggle">
+            <input type="checkbox" checked={isDates} onChange={(e) => setIsDates(e.target.checked)} />
+            <span>فئة تمور</span>
+          </label>
+          <p className="cat-type-hint">
+            {isDates
+              ? "ستظهر منتجات هذه الفئة ضمن قسم التمور."
+              : "ليست تمور — ستظهر منتجاتها في قسم «منتجات أخرى»."}
+          </p>
         </div>
 
         {/* Sub-categories */}
@@ -124,7 +138,10 @@ export default function CategoriesPage() {
             <tbody>
               {categories.map((c) => (
                 <tr key={c._id}>
-                  <td><strong>{c.nameAR}</strong></td>
+                  <td>
+                    <strong>{c.nameAR}</strong>
+                    {c.isDates === false && <span className="cat-type-badge">منتجات أخرى</span>}
+                  </td>
                   <td dir="ltr" style={{ textAlign: "left" }}>{c.nameEN || "—"}</td>
                   <td>
                     {c.subCategories.length > 0 ? (

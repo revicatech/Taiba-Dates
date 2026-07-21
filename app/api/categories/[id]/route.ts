@@ -23,10 +23,11 @@ export async function PUT(req: NextRequest, { params }: Ctx): Promise<NextRespon
   try {
     const { id } = await params;
     await requireAdmin();
-    const { nameAR, nameEN, subCategories } = await req.json();
+    const { nameAR, nameEN, isDates, subCategories } = await req.json();
     const update: Record<string, unknown> = {};
     if (nameAR !== undefined) update.nameAR = nameAR;
     if (nameEN !== undefined) update.nameEN = nameEN || undefined;
+    if (isDates !== undefined) update.isDates = isDates !== false;
     if (subCategories !== undefined) {
       update.subCategories = subCategories.map((s: { nameAR: string; nameEN?: string }) => ({
         nameAR: s.nameAR,

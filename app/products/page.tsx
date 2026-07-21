@@ -9,17 +9,31 @@ import RevealOnScroll from "@/components/RevealOnScroll";
 import { fetchProducts } from "@/data/products";
 import { fetchCategories } from "@/data/categories";
 
-type Props = { searchParams: { category?: string } };
+type Props = { searchParams: { category?: string; sub?: string; unit?: string } };
 
 export const metadata = {
-  title: "المنتجات — Tiba For Dates",
-  description: "تصفح مجموعتنا الفاخرة من أجود التمور الخليجية.",
+  title: "المنتجات",
+  description: "تصفح مجموعتنا الفاخرة من أجود التمور الخليجية — تمر سعودي، مدجول، تمر محشي وفواكه مجففة.",
+  openGraph: {
+    title: "منتجات طيبه للتمور",
+    description: "تصفح مجموعتنا الفاخرة من أجود التمور الخليجية.",
+    images: [{ url: "/assets/store.jpeg", alt: "منتجات طيبه للتمور" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "منتجات طيبه للتمور",
+    description: "أجود التمور الخليجية — تمر سعودي، مدجول، تمر محشي وفواكه مجففة.",
+    images: ["/assets/store.jpeg"],
+  },
 };
 
 export default async function ProductsPage({ searchParams }: Props) {
   const activeCategoryId = searchParams.category;
+  // A subcategory filter only applies within its category.
+  const activeSubId = activeCategoryId ? searchParams.sub : undefined;
+  const activeUnit = searchParams.unit === "box" || searchParams.unit === "piece" ? searchParams.unit : undefined;
   const [products, categories] = await Promise.all([
-    fetchProducts({ limit: 100, category: activeCategoryId }),
+    fetchProducts({ limit: 100, category: activeCategoryId, subCategory: activeSubId, unit: activeUnit }),
     fetchCategories(),
   ]);
   const activeCategory = activeCategoryId ? categories.find((c) => c._id === activeCategoryId) : undefined;
@@ -30,7 +44,7 @@ export default async function ProductsPage({ searchParams }: Props) {
       <ProductsPageHero totalCount={products.length} activeCategoryName={activeCategory?.nameAR} />
       <section className="products-page-section">
         <div className="container">
-          <CategoryFilter categories={categories} activeId={activeCategoryId} />
+          <CategoryFilter categories={categories} activeId={activeCategoryId} activeSubId={activeSubId} activeUnit={activeUnit} />
           {products.length === 0 ? (
             <RevealOnScroll style={{ textAlign: "center", padding: "96px 24px", color: "var(--color-text-muted)" }}>
               <p style={{ fontSize: 18 }}>
@@ -40,7 +54,7 @@ export default async function ProductsPage({ searchParams }: Props) {
           ) : (
             <div className="products-grid">
               {products.map((p, i) => {
-                const coverImage = p.sizes[0]?.images[0]?.url ?? "";
+                const coverImage = p.images[0]?.url ?? "";
                 return (
                   <RevealOnScroll key={p._id} style={{ transitionDelay: `${(i % 3) * 80}ms` }}>
                     <a href={`/products/${p._id}`} className="product-card" style={{ textDecoration: "none", display: "block" }}>
@@ -56,12 +70,24 @@ export default async function ProductsPage({ searchParams }: Props) {
                         )}
                         <div className="product-name-ar">{p.nameAR}</div>
                         {p.nameEN && <div className="product-name-en">{p.nameEN}</div>}
-                        {p.sizes.length > 0 && (
-                          <div className="product-weights">
-                            <span className="weights-label">الأحجام:</span>
-                            {p.sizes.map((s) => <span key={s.label} className="weight-pill">{s.label}</span>)}
-                          </div>
-                        )}
+                        {(() => {
+                          const subCats = (p.subCategoryIds ?? [])
+                            .map((id) => p.category?.subCategories?.find((s) => s._id === id))
+                            .filter(Boolean) as { _id: string; nameAR: string }[];
+                          return (subCats.length > 0 || p.grades.length > 0 || p.weights.length > 0) ? (
+                            <div className="product-weights">
+                              {subCats.map((s) => (
+                                <span key={s._id} className="subcat-pill">{s.nameAR}</span>
+                              ))}
+                              {p.grades.map((g) => (
+                                <span key={g} className="weight-pill">{g}</span>
+                              ))}
+                              {p.weights.map((w) => (
+                                <span key={w} className="weight-pill">{w}</span>
+                              ))}
+                            </div>
+                          ) : null;
+                        })()}
                         <div className="product-footer">
                           <span className="product-btn">عرض المنتج ←</span>
                         </div>

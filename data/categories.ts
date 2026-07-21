@@ -12,6 +12,7 @@ export async function fetchCategories(): Promise<Category[]> {
       _id: String(d._id),
       nameEN: d.nameEN ?? "",
       nameAR: d.nameAR,
+      isDates: d.isDates !== false,
       subCategories: (d.subCategories ?? []).map((s) => ({
         _id: String(s._id),
         nameAR: s.nameAR,

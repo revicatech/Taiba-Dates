@@ -9,6 +9,7 @@ export interface ISubCategory {
 export interface ICategory extends Document {
   nameEN?: string;
   nameAR: string;
+  isDates: boolean;
   subCategories: ISubCategory[];
 }
 
@@ -21,6 +22,7 @@ const categorySchema = new Schema<ICategory>(
   {
     nameAR: { type: String, required: true, unique: true, trim: true },
     nameEN: { type: String, trim: true },
+    isDates: { type: Boolean, default: true },
     subCategories: { type: [subCategorySchema], default: [] },
   },
   { timestamps: true }

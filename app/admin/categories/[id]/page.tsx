@@ -16,6 +16,7 @@ export default function EditCategoryPage() {
 
   const [nameAR, setNameAR] = useState("");
   const [nameEN, setNameEN] = useState("");
+  const [isDates, setIsDates] = useState(true);
   const [subs, setSubs] = useState<SubInput[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -27,6 +28,7 @@ export default function EditCategoryPage() {
       .then((c) => {
         setNameAR(c.nameAR);
         setNameEN(c.nameEN ?? "");
+        setIsDates(c.isDates !== false);
         setSubs((c.subCategories ?? []).map((s: SubCategory) => ({ key: uid(), _id: s._id, nameAR: s.nameAR, nameEN: s.nameEN ?? "" })));
       })
       .catch((err) => setError(err instanceof ApiError ? err.message : "فشل التحميل"))
@@ -50,6 +52,7 @@ export default function EditCategoryPage() {
       await categoriesApi.update(id, {
         nameAR,
         nameEN,
+        isDates,
         subCategories: subs.map((s) => ({ nameAR: s.nameAR, nameEN: s.nameEN })),
       });
       router.push("/admin/categories");
@@ -79,6 +82,18 @@ export default function EditCategoryPage() {
               <label htmlFor="nameEN">English name <span style={{ fontWeight: 400, fontSize: 12 }}>(optional)</span></label>
               <input id="nameEN" className="admin-input" value={nameEN} onChange={(e) => setNameEN(e.target.value)} dir="ltr" />
             </div>
+          </div>
+
+          <div className="admin-form-row">
+            <label className="cat-type-toggle">
+              <input type="checkbox" checked={isDates} onChange={(e) => setIsDates(e.target.checked)} />
+              <span>فئة تمور</span>
+            </label>
+            <p className="cat-type-hint">
+              {isDates
+                ? "ستظهر منتجات هذه الفئة ضمن قسم التمور."
+                : "ليست تمور — ستظهر منتجاتها في قسم «منتجات أخرى»."}
+            </p>
           </div>
 
           <div className="admin-form-row">
