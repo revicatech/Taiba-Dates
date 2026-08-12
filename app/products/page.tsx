@@ -66,7 +66,7 @@ export default async function ProductsPage({ searchParams }: Props) {
                       </div>
                       <div className="product-info">
                         {p.category && (
-                          <span className="product-variety">{p.category.nameEN} — {p.category.nameAR}</span>
+                          <span className="product-variety">{p.category.nameEN} — <span className="product-variety-ar">{p.category.nameAR}</span></span>
                         )}
                         <div className="product-name-ar">{p.nameAR}</div>
                         {p.nameEN && <div className="product-name-en">{p.nameEN}</div>}

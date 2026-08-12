@@ -737,6 +737,13 @@ nav .container {
   display: block;
   opacity: 0.9;
 }
+/* Arabic run inside .product-variety: reset tracking/font so letters keep
+   their cursive joining instead of rendering as isolated fragments. */
+.product-variety-ar {
+  font-family: var(--font-arabic);
+  letter-spacing: normal;
+  text-transform: none;
+}
 .product-name-ar {
   font-family: var(--font-arabic);
   font-size: 19px;
@@ -1296,12 +1303,11 @@ footer {
   background: rgba(244,175,46,0.08);
 }
 .footer-col h4 {
-  font-family: var(--font-latin-body);
+  font-family: var(--font-arabic);
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-primary);
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: normal;
   margin-bottom: 20px;
 }
 .footer-col ul { list-style: none; }
@@ -1669,7 +1675,7 @@ footer {
   border-radius: 999px;
   border: 1px solid rgba(244, 175, 46, 0.4);
   font-size: 12px;
-  font-family: var(--font-latin-body);
+  font-family: var(--font-arabic);
   color: var(--color-text-secondary);
   background: transparent;
 }
