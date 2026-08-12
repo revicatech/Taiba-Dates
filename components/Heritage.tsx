@@ -32,7 +32,7 @@ export default function Heritage() {
               />
             </div>
             <div className="heritage-accent-box">
-              <div className="heritage-accent-num">20+</div>
+              <div className="heritage-accent-num">15+</div>
               <div className="heritage-accent-label">سنة من الخبرة</div>
             </div>
           </RevealOnScroll>
