@@ -25,7 +25,7 @@ export default function Heritage() {
             <div className="heritage-img-frame">
               <Image
                 src="/assets/store.jpeg"
-                alt="متجر طيبه للتمور"
+                alt="متجر طيبة للتمور"
                 fill
                 style={{ objectFit: "cover", objectPosition: "center top" }}
                 sizes="(max-width: 768px) 100vw, 50vw"
@@ -38,7 +38,7 @@ export default function Heritage() {
           </RevealOnScroll>
 
           <RevealOnScroll>
-            <span className="section-eyebrow">Our Heritage — إرثنا</span>
+            <span className="section-eyebrow">Our Heritage — <span className="section-eyebrow-ar">إرثنا</span></span>
             <h2 className="section-title-ar">
               من قلب الخليج<br />إلى مائدتكم
             </h2>
@@ -47,7 +47,7 @@ export default function Heritage() {
               تأسست "طيبة للتمور" سنة 2011، من عشق أصيل للتمر الخليجي وحرفة الانتقاء الدقيق. بدأنا بعد سنوات من الخبرة في بيع التمر، وأسسنا شركة صغيرة لم تتوقف عن النمو منذ يومها الأول.
             </p>
             <p className="section-desc" style={{ marginBottom: 28 }}>
-              نجوب مزارع القصيم والغاط والمدينة المنورة، وصولًا إلى الأغوار الأردنية، باحثين عن أجود الأصناف وأكثرها نقاءً. وكل صندوق يحمل اسم "طيبة" يحمل معه وعدًا لا نحيد عنه: تمرة اخترناها بأيدينا بأدق المعايير، ووصلت إليكم في أوج نضجها وعطائها.
+              نتجول في مزارع القصيم والغاط والمدينة المنورة، وصولًا إلى الأغوار الأردنية، باحثين عن أجود الأصناف وأكثرها نقاءً. وكل صندوق يحمل اسم "طيبة" يحمل معه وعدًا لا نحيد عنه: تمرة اخترناها بأيدينا بأدق المعايير، ووصلت إليكم في أوج نضجها وعطائها.
             </p>
             <p className="section-desc" style={{ marginBottom: 28 }}>
               على مدى السنين، كبرت معنا الثقة، حتى وصلنا لخدمة أكثر من 2000 عميل اختاروا "طيبة" واستمروا معنا. لم يكن الطريق دائمًا سهلًا؛ فسنة 2020 كانت من أصعب السنوات التي مررنا بها، لكن وفاء عملائنا وثقتهم بنا كانا السبب الذي مكّننا من العودة أقوى من قبل.

@@ -10,7 +10,7 @@ export default async function Products() {
     <section className="products" id="products">
       <div className="container">
         <RevealOnScroll className="products-header">
-          <span className="section-eyebrow">Our Collection — مجموعتنا</span>
+          <span className="section-eyebrow">Our Collection — <span className="section-eyebrow-ar">مجموعتنا</span></span>
           <h2 className="section-title-ar">أجود التمور الفاخرة</h2>
           <p className="section-title-en">Premium Date Varieties</p>
           <p className="section-desc">

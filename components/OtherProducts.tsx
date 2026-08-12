@@ -13,7 +13,7 @@ export default async function OtherProducts() {
     <section className="products" id="other-products">
       <div className="container">
         <RevealOnScroll className="products-header">
-          <span className="section-eyebrow">Other Products — منتجات أخرى</span>
+          <span className="section-eyebrow">Other Products — <span className="section-eyebrow-ar">منتجات أخرى</span></span>
           <h2 className="section-title-ar">منتجات أخرى</h2>
           <p className="section-title-en">More From Tiba</p>
           <p className="section-desc">

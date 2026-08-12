@@ -11,7 +11,7 @@ export default function Logo({ size = 48, priority, className }: Props) {
   return (
     <Image
       src={logo}
-      alt="طيبه للتمور — Tiba Dates"
+      alt="طيبة للتمور — Tiba Dates"
       width={size}
       height={size}
       priority={priority}

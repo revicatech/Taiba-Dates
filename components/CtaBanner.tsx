@@ -10,7 +10,7 @@ export default function CtaBanner() {
           <h2 className="cta-title-ar">أهدِ من يستحق أجود التمور</h2>
           <p className="cta-title-en">Gift the Finest Dates</p>
           <p className="cta-desc">
-            سواء كانت مناسبة عيد أو زفاف أو مجرد كرمك الخليجي الأصيل — طيبه تجعل كل لحظة أحلى.
+            سواء كانت مناسبة عيد أو زفاف أو مجرد كرمك الخليجي الأصيل — طيبة تجعل كل لحظة أحلى.
           </p>
           <div className="cta-actions">
             <a
@@ -32,7 +32,7 @@ export default function CtaBanner() {
     <section className="contact-section" id="contact">
       <div className="contact-inner">
         <RevealOnScroll>
-          <p className="section-eyebrow">تواصل معنا — Contact Us</p>
+          <p className="section-eyebrow"><span className="section-eyebrow-ar">تواصل معنا</span> — Contact Us</p>
           <h2 className="contact-section-title">نحن هنا لخدمتك</h2>
         </RevealOnScroll>
 
@@ -95,7 +95,7 @@ export default function CtaBanner() {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="موقع طيبه للتمور"
+                title="موقع طيبة للتمور"
               />
             </div>
             <a

@@ -178,7 +178,7 @@
 }
 /* Faint brand watermark behind the page content */
 .admin-main::before {
-  content: 'طيبه';
+  content: 'طيبة';
   position: absolute;
   top: 50%;
   left: -60px;

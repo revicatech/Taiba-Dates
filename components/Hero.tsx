@@ -48,7 +48,7 @@ export default function Hero() {
               <span className="hero-stat-label">صنف من التمور</span>
             </div>
             <div className="hero-stat">
-              <span className="hero-stat-num">20+</span>
+              <span className="hero-stat-num">15+</span>
               <span className="hero-stat-label">سنة من الخبرة</span>
             </div>
           </div>

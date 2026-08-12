@@ -99,7 +99,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
           <span />
           <span />
         </button>
-        <Link href="/admin/products" className="admin-topbar-brand" aria-label="طيبه">
+        <Link href="/admin/products" className="admin-topbar-brand" aria-label="طيبة">
           <Logo size={40} />
         </Link>
         <span className="admin-topbar-spacer" />
@@ -112,7 +112,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
         onClick={() => setMenuOpen(false)}
       />
       <aside className="admin-sidebar">
-        <Link href="/admin/products" className="admin-sidebar-brand" aria-label="طيبه — لوحة التحكم">
+        <Link href="/admin/products" className="admin-sidebar-brand" aria-label="طيبة — لوحة التحكم">
           <Logo size={72} priority />
         </Link>
         <span className="admin-sidebar-brand-en">Admin Panel</span>
