@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : product.nameAR;
   const description =
     product.description ||
-    `${product.nameAR} من طيبة للتمور — تمور فاخرة مختارة بعناية من أجود مزارع الخليج.`;
+    `${product.nameAR} من طيبه للتمور — تمور فاخرة مختارة بعناية من أجود مزارع الخليج.`;
   const image = product.images?.[0]?.url ?? `${SITE_URL}/assets/store.jpeg`;
 
   return {
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       type: "website",
       locale: "ar_SA",
-      siteName: "طيبة للتمور",
+      siteName: "طيبه للتمور",
       title,
       description,
       images: [{ url: image, alt: product.nameAR }],
@@ -60,12 +60,12 @@ export default async function ProductDetailPage({ params }: Props) {
     ...(product.nameEN ? { alternateName: product.nameEN } : {}),
     description: product.description,
     image: (product.images ?? []).map((img: { url: string }) => img.url),
-    brand: { "@type": "Brand", name: "طيبة للتمور" },
+    brand: { "@type": "Brand", name: "طيبه للتمور" },
     offers: {
       "@type": "Offer",
       availability: "https://schema.org/InStock",
       url: `${SITE_URL}/products/${product._id}`,
-      seller: { "@type": "Organization", name: "طيبة للتمور" },
+      seller: { "@type": "Organization", name: "طيبه للتمور" },
       priceCurrency: "SAR",
     },
     ...(product.category?.nameAR ? { category: product.category.nameAR } : {}),

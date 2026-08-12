@@ -24,7 +24,7 @@ export default function Navbar({ solid = false }: { solid?: boolean }) {
     <>
       <nav className={solid || scrolled ? "scrolled" : undefined}>
         <div className="container">
-          <Link href="/" className="nav-logo" aria-label="طيبة للتمور — الصفحة الرئيسية">
+          <Link href="/" className="nav-logo" aria-label="طيبه للتمور — الصفحة الرئيسية">
             <Logo size={72} priority />
           </Link>
           <ul className="nav-links">

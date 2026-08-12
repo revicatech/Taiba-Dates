@@ -15,13 +15,13 @@ export const metadata = {
   title: "المنتجات",
   description: "تصفح مجموعتنا الفاخرة من أجود التمور الخليجية — تمر سعودي، مدجول، تمر محشي وفواكه مجففة.",
   openGraph: {
-    title: "منتجات طيبة للتمور",
+    title: "منتجات طيبه للتمور",
     description: "تصفح مجموعتنا الفاخرة من أجود التمور الخليجية.",
-    images: [{ url: "/assets/store.jpeg", alt: "منتجات طيبة للتمور" }],
+    images: [{ url: "/assets/store.jpeg", alt: "منتجات طيبه للتمور" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "منتجات طيبة للتمور",
+    title: "منتجات طيبه للتمور",
     description: "أجود التمور الخليجية — تمر سعودي، مدجول، تمر محشي وفواكه مجففة.",
     images: ["/assets/store.jpeg"],
   },

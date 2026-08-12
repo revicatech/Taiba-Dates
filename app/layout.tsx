@@ -44,7 +44,7 @@ const dmSans = DM_Sans({
 const orgJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "طيبة للتمور",
+  name: "طيبه للتمور",
   alternateName: "Tiba For Dates",
   url: SITE_URL,
   logo: `${SITE_URL}/assets/store.jpeg`,
@@ -60,7 +60,7 @@ const orgJsonLd = {
 const siteJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "طيبة للتمور",
+  name: "طيبه للتمور",
   url: SITE_URL,
   description:
     "منذ أجيال، نختار أجود التمور من أفضل مزارع الخليج العربي — كل تمرة حكاية من الأصالة والكرم والطعم الفريد.",
@@ -70,22 +70,22 @@ const siteJsonLd = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "طيبة للتمور — Tiba For Dates",
-    template: "%s — طيبة للتمور",
+    default: "طيبه للتمور — Tiba For Dates",
+    template: "%s — طيبه للتمور",
   },
   description:
     "منذ أجيال، نختار أجود التمور من أفضل مزارع الخليج العربي — كل تمرة حكاية من الأصالة والكرم والطعم الفريد.",
   keywords: [
     "تمور", "تمر فاخر", "تمر سعودي", "تمر مدجول", "تمر محشي",
-    "طيبة للتمور", "Tiba For Dates", "dates", "Medjool dates", "Saudi dates",
+    "طيبه للتمور", "Tiba For Dates", "dates", "Medjool dates", "Saudi dates",
     "premium dates", "تمور خليجية", "تمر طبيعي",
   ],
-  authors: [{ name: "طيبة للتمور" }],
+  authors: [{ name: "طيبه للتمور" }],
   openGraph: {
     type: "website",
     locale: "ar_SA",
-    siteName: "طيبة للتمور",
-    title: "طيبة للتمور — Tiba For Dates",
+    siteName: "طيبه للتمور",
+    title: "طيبه للتمور — Tiba For Dates",
     description:
       "منذ أجيال، نختار أجود التمور من أفضل مزارع الخليج العربي — كل تمرة حكاية من الأصالة والكرم والطعم الفريد.",
     images: [
@@ -93,13 +93,13 @@ export const metadata: Metadata = {
         url: "/assets/store.jpeg",
         width: 1200,
         height: 630,
-        alt: "طيبة للتمور — تمور فاخرة من مزارع الخليج",
+        alt: "طيبه للتمور — تمور فاخرة من مزارع الخليج",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "طيبة للتمور — Tiba For Dates",
+    title: "طيبه للتمور — Tiba For Dates",
     description: "أجود التمور من مزارع الخليج العربي.",
     images: ["/assets/store.jpeg"],
   },

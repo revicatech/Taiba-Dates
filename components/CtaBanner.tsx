@@ -10,7 +10,7 @@ export default function CtaBanner() {
           <h2 className="cta-title-ar">أهدِ من يستحق أجود التمور</h2>
           <p className="cta-title-en">Gift the Finest Dates</p>
           <p className="cta-desc">
-            سواء كانت مناسبة عيد أو زفاف أو مجرد كرمك الخليجي الأصيل — طيبة تجعل كل لحظة أحلى.
+            سواء كانت مناسبة عيد أو زفاف أو مجرد كرمك الخليجي الأصيل — طيبه تجعل كل لحظة أحلى.
           </p>
           <div className="cta-actions">
             <a
@@ -95,7 +95,7 @@ export default function CtaBanner() {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="موقع طيبة للتمور"
+                title="موقع طيبه للتمور"
               />
             </div>
             <a

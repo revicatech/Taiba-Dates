@@ -1,6 +1,10 @@
+import Link from "next/link";
 import Logo from "@/components/Logo";
+import { fetchCategories } from "@/data/categories";
 
-export default function Footer() {
+export default async function Footer() {
+  const categories = await fetchCategories();
+
   return (
     <footer>
       <div className="footer-inner-new">
@@ -36,10 +40,11 @@ export default function Footer() {
         <div className="footer-col">
           <h4>منتجاتنا</h4>
           <ul>
-            <li><a>تمر مدجول اردني</a></li>
-            <li><a>تمر الصقعي</a></li>
-            <li><a>تمر الصفاوي</a></li>
-            <li><a>تمر خضري</a></li>
+            {categories.map((cat) => (
+              <li key={cat._id}>
+                <Link href={`/products?category=${cat._id}`}>{cat.nameAR}</Link>
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -58,7 +63,7 @@ export default function Footer() {
 
       <div className="footer-bottom">
         <p className="footer-designed">Designed by REVICA x Crazy Ads</p>
-        <p className="footer-copy">© 2026 طيبة للتمور — جميع الحقوق محفوظة</p>
+        <p className="footer-copy">© 2026 طيبه للتمور — جميع الحقوق محفوظة</p>
       </div>
     </footer>
   );

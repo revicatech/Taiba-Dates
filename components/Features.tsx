@@ -17,7 +17,7 @@ export default function Features() {
       <div className="container">
         <RevealOnScroll className="features-header">
           <span className="section-eyebrow" style={{ color: "var(--color-secondary-light)" }}>
-            Why Tiba — <span className="section-eyebrow-ar">لماذا طيبة</span>
+            Why Tiba — <span className="section-eyebrow-ar">لماذا طيبه</span>
           </span>
           <h2 className="section-title-ar" style={{ color: "var(--color-white)" }}>
             التميز في كل تفصيل

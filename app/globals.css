@@ -556,7 +556,7 @@ nav .container {
   overflow: hidden;
 }
 .heritage::before {
-  content: 'طيبة';
+  content: 'طيبه';
   position: absolute;
   top: 50%;
   right: -60px;
