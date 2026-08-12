@@ -67,7 +67,7 @@ export default function Heritage() {
               </div>
               <div style={{ width: 1, background: "var(--color-border)" }} />
               <div>
-                <div style={statNumStyle}>20+</div>
+                <div style={statNumStyle}>15+</div>
                 <div style={statLabelStyle}>سنة من الخبرة</div>
               </div>
             </div>
